@@ -39,6 +39,22 @@ class SearchPage(Page):
         return SuggestList(self.driver)
 
 
+class SearchResultPage(Page):
+    PATH = ''
+
+    @property
+    def search_result(self):
+        return SearchResult(self.driver)
+
+
+class MoviePage(Page):
+    PATH = ''
+
+    @property
+    def movie_info(self):
+        return MovieInfo(self.driver)
+
+
 class SearchForm(Component):
     INPUT_FIELD   = '//input[@placeholder="Введите название фильма, сериала или телешоу"]'
     SEARCH_BUTTON = '//span[text()="Найти"]'
@@ -57,30 +73,31 @@ class SuggestList(Component):
     MAX_movies_NUMBER = 3
 
     def movies_titles(self):
-        WebDriverWait(self.driver, 30, 0.1).until(
+        WebDriverWait(self.driver, 30, 0.5).until(
             lambda d: d.find_element_by_css_selector(self.ITEMS).is_displayed()
         )
         items = self.driver.find_elements_by_css_selector(self.ITEMS)
         movies = [item.text for item in items]
         return movies[:self.MAX_movies_NUMBER]
 
-class SearchResultPage(Component):
-    ELEMENT_NUBMER_BADGES = '.countyellow'
-    TERMINATOR_MOVIE_TITLE = '//a[text()="Терминатор"]'
+
+class SearchResult(Component):
+    ELEMENT_NUMBER_BADGES = '.countyellow'
 
     def movies_number(self):
-        elements_numbers = self.driver.find_elements_by_css_selector(self.ELEMENT_NUBMER_BADGES)
+        elements_numbers = self.driver.find_elements_by_css_selector(self.ELEMENT_NUMBER_BADGES)
         return elements_numbers[0].text
 
-
     def series_nubmer(self):
-        elements_numbers = self.driver.find_elements_by_css_selector(self.ELEMENT_NUBMER_BADGES)
+        elements_numbers = self.driver.find_elements_by_css_selector(self.ELEMENT_NUMBER_BADGES)
         return elements_numbers[1].text
 
-    def terminator_movie_click(self):
-        self.driver.find_element_by_xpath(self.TERMINATOR_MOVIE_TITLE).click()
+    def item_title(self, title):
+        ITEM_TITLE = '//div[@class="searchitem__item__name"]/a[text()="%s"]' % title
+        return self.driver.find_element_by_xpath(ITEM_TITLE)
 
-class MoviePage(Component):
+
+class MovieInfo(Component):
     MOVIE_TITLE_ENG = '.movieabout__nameeng'
 
     def movie_title_eng(self):

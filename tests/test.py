@@ -21,31 +21,34 @@ class AccurateSearchTest(unittest.TestCase):
         )
 
     def test_accurate_film_search(self):
-        query = u'Терминатор'
-        query_eng = 'The Terminator'
+        TITLE = u'Терминатор'
+        TITLE_ENG = 'The Terminator'
 
         search_page = SearchPage(self.driver)
         search_page.open()
 
         search_form = search_page.searchform
-        search_form.input_query(query)
+        search_form.input_query(TITLE)
 
         suggest_list = search_page.suggestlist
         movies_titles = suggest_list.movies_titles()
-        self.assertTrue(query in movies_titles)
+        self.assertTrue(TITLE in movies_titles)
 
         search_form.submit()
 
         result_page = SearchResultPage(self.driver)
-        movies_number = result_page.movies_number()
+        search_result = result_page.search_result
+
+        movies_number = search_result.movies_number()
         self.assertEqual(int(movies_number), 9)
-        series_number = result_page.series_nubmer()
+        series_number = search_result.series_nubmer()
         self.assertEqual(int(series_number), 1)
-        result_page.terminator_movie_click()
+        search_result.item_title(TITLE).click()
 
         movie_page = MoviePage(self.driver)
-        title_eng = movie_page.movie_title_eng()
-        self.assertEqual(title_eng, query_eng)
+        movie_info = movie_page.movie_info
+        title_eng = movie_info.movie_title_eng()
+        self.assertEqual(title_eng, TITLE_ENG)
 
 
 
