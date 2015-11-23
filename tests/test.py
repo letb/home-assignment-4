@@ -22,6 +22,8 @@ class AccurateSearchTest(unittest.TestCase):
 
     def test_accurate_film_search(self):
         query = u'Терминатор'
+        query_eng = 'The Terminator'
+
         search_page = SearchPage(self.driver)
         search_page.open()
 
@@ -29,11 +31,23 @@ class AccurateSearchTest(unittest.TestCase):
         search_form.input_query(query)
 
         suggest_list = search_page.suggestlist
-        films_titles = suggest_list.films_titles()
-        for film in films_titles: print film
-        self.assertTrue(query in films_titles)
+        movies_titles = suggest_list.movies_titles()
+        self.assertTrue(query in movies_titles)
 
         search_form.submit()
+
+        result_page = SearchResultPage(self.driver)
+        movies_number = result_page.movies_number()
+        self.assertEqual(int(movies_number), 9)
+        series_number = result_page.series_nubmer()
+        self.assertEqual(int(series_number), 1)
+        result_page.terminator_movie_click()
+
+        movie_page = MoviePage(self.driver)
+        title_eng = movie_page.movie_title_eng()
+        self.assertEqual(title_eng, query_eng)
+
+
 
     def tearDown(self):
         self.driver.quit()

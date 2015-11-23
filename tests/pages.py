@@ -19,7 +19,7 @@ class Page(object):
     def open(self):
         url = urlparse.urljoin(self.BASE_URL, self.PATH)
         self.driver.get(url)
-        self.driver.maximize_window()
+        # self.driver.maximize_window()
 
 
 class Component(object):
@@ -51,15 +51,43 @@ class SearchForm(Component):
 
 
 class SuggestList(Component):
-    SUGGEST_LIST = '.bigsearch__blocksearch__suggest'
+    # SUGGEST_LIST = '.bigsearch__blocksearch__suggest'
     TITLES = '.bigsearch__blocksearch__suggest__title'
     ITEMS = '.bigsearch__blocksearch__suggest__item__title__name a'
-    MAX_FILMS_NUMBER = 3
+    MAX_movies_NUMBER = 3
 
-    def films_titles(self):
+    def movies_titles(self):
         WebDriverWait(self.driver, 30, 0.1).until(
-            lambda d: d.find_element_by_css_selector(self.SUGGEST_LIST).is_displayed()
+            lambda d: d.find_element_by_css_selector(self.ITEMS).is_displayed()
         )
         items = self.driver.find_elements_by_css_selector(self.ITEMS)
-        films = [item.text for item in items]
-        return films[:self.MAX_FILMS_NUMBER]
+        movies = [item.text for item in items]
+        return movies[:self.MAX_movies_NUMBER]
+
+class SearchResultPage(Component):
+    ELEMENT_NUBMER_BADGES = '.countyellow'
+    TERMINATOR_MOVIE_TITLE = '//a[text()="Терминатор"]'
+
+    def movies_number(self):
+        elements_numbers = self.driver.find_elements_by_css_selector(self.ELEMENT_NUBMER_BADGES)
+        return elements_numbers[0].text
+
+
+    def series_nubmer(self):
+        elements_numbers = self.driver.find_elements_by_css_selector(self.ELEMENT_NUBMER_BADGES)
+        return elements_numbers[1].text
+
+    def terminator_movie_click(self):
+        self.driver.find_element_by_xpath(self.TERMINATOR_MOVIE_TITLE).click()
+
+class MoviePage(Component):
+    MOVIE_TITLE_ENG = '.movieabout__nameeng'
+
+    def movie_title_eng(self):
+        title_eng = self.driver.find_element_by_css_selector(self.MOVIE_TITLE_ENG)
+        return title_eng.text
+
+
+
+
+
