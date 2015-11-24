@@ -68,10 +68,14 @@ class SearchForm(Component):
     SEARCH_BUTTON = '//span[text()="Найти"]'
     SEARCH_RESULTS_PAGE_TITLE = '//h1[text()="Результаты поиска"]'
 
-    def input_query(self, query):
+    def input_query_paste(self, query):
         search_field = self.driver.find_element_by_xpath(self.SEARCH_FIELD)
         self.driver.execute_script("return arguments[0].value='" + query + "';", search_field)
         search_field.send_keys("")
+
+    def input_query(self, query):
+        self.driver.find_element_by_xpath(self.SEARCH_FIELD).send_keys(query)
+
 
     def submit(self):
         wait = WebDriverWait(self.driver, 10)

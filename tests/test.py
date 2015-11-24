@@ -25,7 +25,7 @@ class AccurateSearchTest(unittest.TestCase):
         search_page.open()
 
         search_form = search_page.searchform
-        search_form.input_query(TITLE)
+        search_form.input_query_paste(TITLE)
 
         suggest_list = search_page.suggestlist
         movies_titles = suggest_list.items_titles()
@@ -58,7 +58,7 @@ class AccurateSearchTest(unittest.TestCase):
         search_page.open()
 
         search_form = search_page.searchform
-        search_form.input_query(QUERY)
+        search_form.input_query_paste(QUERY)
 
         suggest_list = search_page.suggestlist
         suggested_titles = suggest_list.items_titles()
@@ -85,7 +85,7 @@ class AccurateSearchTest(unittest.TestCase):
         search_page.open()
 
         search_form = search_page.searchform
-        search_form.input_query(QUERY)
+        search_form.input_query_paste(QUERY)
 
         suggest_list = search_page.suggestlist
         suggested_titles = suggest_list.items_titles()
@@ -120,7 +120,7 @@ class SymbolsSearchTest(unittest.TestCase):
         search_page.open()
 
         search_form = search_page.searchform
-        search_form.input_query(QUERY)
+        search_form.input_query_paste(QUERY)
         search_form.submit()
 
         result_page = SearchResultPage(self.driver)
@@ -159,13 +159,15 @@ class VulnerableSearchTest(unittest.TestCase):
             desired_capabilities=getattr(DesiredCapabilities, browser).copy()
         )
 
-    def vulnerable_search_helper(self, QUERY):
+    def vulnerable_search_helper(self, QUERY, control=False):
         search_page = SearchPage(self.driver)
         search_page.open()
 
         search_form = search_page.searchform
-        if QUERY != '':
+        if control:
             search_form.input_query(QUERY)
+        elif QUERY != '':
+            search_form.input_query_paste(QUERY)
         search_form.submit()
 
         result_page = SearchResultPage(self.driver)
@@ -184,8 +186,9 @@ class VulnerableSearchTest(unittest.TestCase):
         self.vulnerable_search_helper(QUERY)
 
     def test_control_characters_search(self):
-        QUERY = 'test_control_characters_search\0\a\b\t\n\v\f\r'
-        self.vulnerable_search_helper(QUERY)
+        QUERY = '\\0\\a \\b \\t \\n \\v \\f \\r'
+        control = True
+        self.vulnerable_search_helper(QUERY, control)
 
     def tearDown(self):
         self.driver.quit()
@@ -207,7 +210,7 @@ class NonExistentSearchTest(unittest.TestCase):
         search_page.open()
 
         search_form = search_page.searchform
-        search_form.input_query(QUERY)
+        search_form.input_query_paste(QUERY)
         search_form.submit()
 
         result_page = SearchResultPage(self.driver)
@@ -237,7 +240,7 @@ class YearQuerySearchTest(unittest.TestCase):
         search_page.open()
 
         search_form = search_page.searchform
-        search_form.input_query(QUERY)
+        search_form.input_query_paste(QUERY)
         search_form.submit()
 
         result_page = SearchResultPage(self.driver)
