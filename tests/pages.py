@@ -9,6 +9,7 @@ from selenium.webdriver import DesiredCapabilities, Remote
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException
 
 
 class Page(object):
@@ -84,6 +85,9 @@ class SuggestList(Component):
 
 class SearchResult(Component):
     ELEMENT_NUMBER_BADGES = '.countyellow'
+    BLOCK = '.block.block_shadow_bottom'
+    BLOCK_HEADER = '.hdr__inner'
+    BLOCK_ITEM_NAMES = '.searchitem__item__name a'
 
     def movies_number(self):
         elements_numbers = self.driver.find_elements_by_css_selector(self.ELEMENT_NUMBER_BADGES)
@@ -96,6 +100,19 @@ class SearchResult(Component):
     def item_title(self, title):
         ITEM_TITLE = '//div[@class="searchitem__item__name"]/a[text()="%s"]' % title
         return self.driver.find_element_by_xpath(ITEM_TITLE)
+
+    def check_block_header(self, block, header):
+        try:
+            return block.find_element_by_css_selector(self.BLOCK_HEADER).text == header
+        except NoSuchElementException as e:
+            return False
+
+    # возвращает названия элементов в данном блоке (ФИЛЬМЫ | СЕРИАЛЫ | ТЕЛЕШОУ)
+    def items_titles(self, block_header):
+        blocks = self.driver.find_elements_by_css_selector(self.BLOCK)
+        item_block = [block for block in blocks if self.check_block_header(block, block_header)][0]
+        items = item_block.find_elements_by_css_selector(self.BLOCK_ITEM_NAMES)
+        return [item.text for item in items]
 
 
 class ItemInfo(Component):
