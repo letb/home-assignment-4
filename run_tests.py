@@ -3,7 +3,7 @@
 import sys
 import unittest
 from tests.test import AccurateSearchTest, SymbolsSearchTest, NonExistentSearchTest
-from tests.test import VulnerableSearchTest
+from tests.test import VulnerableSearchTest, YearQuerySearchTest
 
 
 if __name__ == '__main__':
@@ -12,6 +12,7 @@ if __name__ == '__main__':
         unittest.makeSuite(SymbolsSearchTest),
         unittest.makeSuite(NonExistentSearchTest),
         unittest.makeSuite(VulnerableSearchTest),
+        unittest.makeSuite(YearQuerySearchTest),
     ))
     result = unittest.TextTestRunner().run(suite)
     sys.exit(not result.wasSuccessful())

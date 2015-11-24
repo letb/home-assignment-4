@@ -1,20 +1,16 @@
 # -*- coding: utf-8 -*-
-
-import os
-import unittest
 import urlparse
-import time
 
-from selenium.webdriver import DesiredCapabilities, Remote
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException
 
 
 class Page(object):
     BASE_URL = 'https://afisha.mail.ru/'
     PATH = ''
+    INPUT_FIELD = '//input[@placeholder="Введите название фильма, сериала или телешоу"]'
+    AFISHA_LOGO = 'img.pm-logo__link__pic'
 
     def __init__(self, driver):
         self.driver = driver
@@ -23,6 +19,15 @@ class Page(object):
         url = urlparse.urljoin(self.BASE_URL, self.PATH)
         self.driver.get(url)
         self.driver.maximize_window()
+        self.wait_page()
+        input_field = self.driver.find_element_by_xpath(self.INPUT_FIELD)
+        self.driver.execute_script("return arguments[0].scrollIntoView();", input_field)
+
+    def wait_page(self):
+        wait_for_page = WebDriverWait(self.driver, 30)
+        wait_for_page.until(
+            expected_conditions.presence_of_element_located((By.CSS_SELECTOR, self.AFISHA_LOGO))
+        )
 
 
 class Component(object):
@@ -64,10 +69,6 @@ class SearchForm(Component):
     SEARCH_RESULTS_PAGE_TITLE = '//h1[text()="Результаты поиска"]'
 
     def input_query(self, query):
-        wait = WebDriverWait(self.driver, 10)
-        wait.until(
-            expected_conditions.element_to_be_clickable((By.XPATH, self.INPUT_FIELD))
-        )
         self.driver.find_element_by_xpath(self.INPUT_FIELD).send_keys(query)
 
     def submit(self):
@@ -85,7 +86,7 @@ class SuggestList(Component):
     def items_titles(self):
         wait = WebDriverWait(self.driver, 10)
         wait.until(
-            expected_conditions.presence_of_element_located((By.CSS_SELECTOR, self.ITEMS))
+            expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, self.ITEMS))
         )
         items = self.driver.find_elements_by_css_selector(self.TITLES)
         titles = [item.text for item in items]
@@ -97,7 +98,8 @@ class SearchResult(Component):
     HEADER_TITLE = 'h1.title__title'
     BLOCK = '.block.block_shadow_bottom'
     BLOCK_HEADER = '.hdr__inner'
-    BLOCK_ITEM_NAMES = '.searchitem__item__name a'
+    BLOCK_ITEM_NAME = '.searchitem__item__name a'
+    BLOCK_ITEM_NAME_YEAR = '.searchitem__item__name'
 
     def movies_number(self):
         elements_numbers = self.driver.find_elements_by_css_selector(self.ELEMENT_NUMBER_BADGES)
@@ -123,7 +125,11 @@ class SearchResult(Component):
         return self.driver.find_element_by_css_selector(self.HEADER_TITLE).text
 
     def result_items(self):
-        return self.driver.find_elements_by_css_selector(self.BLOCK_ITEM_NAMES)
+        return self.driver.find_elements_by_css_selector(self.BLOCK_ITEM_NAME)
+
+    def result_years(self):
+        return self.driver.find_elements_by_css_selector(self.BLOCK_ITEM_NAME_YEAR)
+
 
 
 class ItemInfo(Component):

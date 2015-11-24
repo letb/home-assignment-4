@@ -94,7 +94,7 @@ class AccurateSearchTest(unittest.TestCase):
         search_result.item_title(TITLE).click()
 
         show_page = ItemPage(self.driver)
-        show_info = show_page.movie_info
+        show_info = show_page.item_info
         # todo: assert menubar on tvshow
 
     def tearDown(self):
@@ -110,11 +110,7 @@ class SymbolsSearchTest(unittest.TestCase):
             desired_capabilities=getattr(DesiredCapabilities, browser).copy()
         )
 
-    def test_search_numbers(self):
-        QUERY = '300'
-        TITLE = u'300 спартанцев'
-        TITLE_ENG = '300'
-
+    def symbol_search_helper(self, QUERY, TITLE, TITLE_ENG):
         search_page = SearchPage(self.driver)
         search_page.open()
 
@@ -132,29 +128,18 @@ class SymbolsSearchTest(unittest.TestCase):
         movie_info = movie_page.item_info
         title_eng = movie_info.item_title_eng()
         self.assertEqual(title_eng, TITLE_ENG)
+
+    def test_search_numbers(self):
+        QUERY = '300'
+        TITLE = u'300 спартанцев'
+        TITLE_ENG = '300'
+        self.symbol_search_helper(QUERY, TITLE, TITLE_ENG)
 
     def test_search_symbols(self):
         QUERY = '1+1'
         TITLE = '1+1'
         TITLE_ENG = 'Intouchables'
-
-        search_page = SearchPage(self.driver)
-        search_page.open()
-
-        search_form = search_page.searchform
-        search_form.input_query(QUERY)
-        search_form.submit()
-
-        result_page = SearchResultPage(self.driver)
-        search_result = result_page.search_result
-        item_title = search_result.item_title(TITLE)
-        self.assertEqual(item_title.text, TITLE)
-        item_title.click()
-
-        movie_page = ItemPage(self.driver)
-        movie_info = movie_page.item_info
-        title_eng = movie_info.item_title_eng()
-        self.assertEqual(title_eng, TITLE_ENG)
+        self.symbol_search_helper(QUERY, TITLE, TITLE_ENG)
 
     def tearDown(self):
         self.driver.quit()
@@ -169,26 +154,13 @@ class VulnerableSearchTest(unittest.TestCase):
             desired_capabilities=getattr(DesiredCapabilities, browser).copy()
         )
 
-    def test_empty_search(self):
+    def vulnerable_search_helper(self, QUERY):
         search_page = SearchPage(self.driver)
         search_page.open()
 
         search_form = search_page.searchform
-        search_form.submit()
-
-        result_page = SearchResultPage(self.driver)
-        search_result = result_page.search_result
-        result_items = search_result.result_items()
-        self.assertFalse(result_items)
-
-    def test_long_query_search(self):
-        QUERY = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
-
-        search_page = SearchPage(self.driver)
-        search_page.open()
-
-        search_form = search_page.searchform
-        search_form.input_query(QUERY)
+        if QUERY != '':
+            search_form.input_query(QUERY)
         search_form.submit()
 
         result_page = SearchResultPage(self.driver)
@@ -197,6 +169,18 @@ class VulnerableSearchTest(unittest.TestCase):
         self.assertEqual(header_title, u'Результаты поиска')
         result_items = search_result.result_items()
         self.assertFalse(result_items)
+
+    def test_empty_search(self):
+        QUERY = ''
+        self.vulnerable_search_helper(QUERY)
+
+    def test_long_query_search(self):
+        QUERY = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+        self.vulnerable_search_helper(QUERY)
+
+    def test_control_characters_search(self):
+        QUERY = 'test_control_characters_search\0\a\b\t\n\v\f\r'
+        self.vulnerable_search_helper(QUERY)
 
     def tearDown(self):
         self.driver.quit()
@@ -231,3 +215,33 @@ class NonExistentSearchTest(unittest.TestCase):
     def tearDown(self):
         self.driver.quit()
 
+
+class YearQuerySearchTest(unittest.TestCase):
+    def setUp(self):
+        browser = os.environ.get('TTHA2BROWSER', 'CHROME')
+
+        self.driver = Remote(
+            command_executor='http://127.0.0.1:4444/wd/hub',
+            desired_capabilities=getattr(DesiredCapabilities, browser).copy()
+        )
+
+    def test_not_search_by_year_in_query(self):
+        QUERY = "2010"
+
+        search_page = SearchPage(self.driver)
+        search_page.open()
+
+        search_form = search_page.searchform
+        search_form.input_query(QUERY)
+        search_form.submit()
+
+        result_page = SearchResultPage(self.driver)
+        search_result = result_page.search_result
+        header_title = search_result.header_title()
+        self.assertEqual(header_title, u'Результаты поиска')
+        result_items = search_result.result_years()
+        first_movie_year = result_items[0].text[-6:][1:5]
+        self.assertNotEqual(int(first_movie_year), 2010)
+
+    def tearDown(self):
+        self.driver.quit()
