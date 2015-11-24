@@ -4,20 +4,27 @@ import os
 import unittest
 import time
 
+from selenium import webdriver
 from selenium.webdriver import DesiredCapabilities, Remote
 
 from pages import SearchPage, SearchResultPage, ItemPage
 
 
-class AccurateSearchTest(unittest.TestCase):
+class BaseTestCase(unittest.TestCase):
     def setUp(self):
-        browser = os.environ.get('TTHA2BROWSER', 'CHROME')
+        self.driver = webdriver.Firefox()
+        # browser = os.environ.get('TTHA2BROWSER', 'CHROME')
+        #
+        # self.driver = Remote(
+        #     command_executor='http://127.0.0.1:4444/wd/hub',
+        #     desired_capabilities=getattr(DesiredCapabilities, browser).copy()
+        # )
 
-        self.driver = Remote(
-            command_executor='http://127.0.0.1:4444/wd/hub',
-            desired_capabilities=getattr(DesiredCapabilities, browser).copy()
-        )
+    def tearDown(self):
+        self.driver.quit()
 
+
+class AccurateSearchTest(BaseTestCase):
     def test_accurate_movie_search(self):
         TITLE = u'Терминатор'
         TITLE_ENG = 'The Terminator'
@@ -103,19 +110,8 @@ class AccurateSearchTest(unittest.TestCase):
         selected_navbar_tab_title = show_info.selected_navbar_tab_title()
         self.assertEqual(selected_navbar_tab_title, u'Телешоу')
 
-    def tearDown(self):
-        self.driver.quit()
 
-
-class SymbolsSearchTest(unittest.TestCase):
-    def setUp(self):
-        browser = os.environ.get('TTHA2BROWSER', 'CHROME')
-
-        self.driver = Remote(
-            command_executor='http://127.0.0.1:4444/wd/hub',
-            desired_capabilities=getattr(DesiredCapabilities, browser).copy()
-        )
-
+class SymbolsSearchTest(BaseTestCase):
     def symbol_search_helper(self, QUERY, TITLE, TITLE_ENG):
         search_page = SearchPage(self.driver)
         search_page.open()
@@ -147,19 +143,8 @@ class SymbolsSearchTest(unittest.TestCase):
         TITLE_ENG = 'Intouchables'
         self.symbol_search_helper(QUERY, TITLE, TITLE_ENG)
 
-    def tearDown(self):
-        self.driver.quit()
 
-
-class VulnerableSearchTest(unittest.TestCase):
-    def setUp(self):
-        browser = os.environ.get('TTHA2BROWSER', 'CHROME')
-
-        self.driver = Remote(
-            command_executor='http://127.0.0.1:4444/wd/hub',
-            desired_capabilities=getattr(DesiredCapabilities, browser).copy()
-        )
-
+class VulnerableSearchTest(BaseTestCase):
     def vulnerable_search_helper(self, QUERY, control=False):
         search_page = SearchPage(self.driver)
         search_page.open()
@@ -191,18 +176,8 @@ class VulnerableSearchTest(unittest.TestCase):
         control = True
         self.vulnerable_search_helper(QUERY, control)
 
-    def tearDown(self):
-        self.driver.quit()
 
-
-class NonExistentSearchTest(unittest.TestCase):
-    def setUp(self):
-        browser = os.environ.get('TTHA2BROWSER', 'CHROME')
-
-        self.driver = Remote(
-            command_executor='http://127.0.0.1:4444/wd/hub',
-            desired_capabilities=getattr(DesiredCapabilities, browser).copy()
-        )
+class NonExistentSearchTest(BaseTestCase):
 
     def test_non_existent_search(self):
         QUERY = 'NON-EXISTENT MOVIE'
@@ -221,18 +196,8 @@ class NonExistentSearchTest(unittest.TestCase):
         result_items = search_result.result_items()
         self.assertFalse(result_items)
 
-    def tearDown(self):
-        self.driver.quit()
 
-
-class YearQuerySearchTest(unittest.TestCase):
-    def setUp(self):
-        browser = os.environ.get('TTHA2BROWSER', 'CHROME')
-
-        self.driver = Remote(
-            command_executor='http://127.0.0.1:4444/wd/hub',
-            desired_capabilities=getattr(DesiredCapabilities, browser).copy()
-        )
+class YearQuerySearchTest(BaseTestCase):
 
     def test_not_search_by_year_in_query(self):
         QUERY = "2010"
@@ -251,6 +216,3 @@ class YearQuerySearchTest(unittest.TestCase):
         result_items = search_result.result_years()
         first_movie_year = result_items[0].text[-6:][1:5]
         self.assertNotEqual(int(first_movie_year), 2010)
-
-    def tearDown(self):
-        self.driver.quit()
