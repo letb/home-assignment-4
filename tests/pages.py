@@ -13,7 +13,7 @@ from selenium.common.exceptions import NoSuchElementException
 
 
 class Page(object):
-    BASE_URL = 'https://afisha.mail.ru/msk/cinema/'
+    BASE_URL = 'https://afisha.mail.ru/'
     PATH = ''
 
     def __init__(self, driver):
@@ -22,7 +22,7 @@ class Page(object):
     def open(self):
         url = urlparse.urljoin(self.BASE_URL, self.PATH)
         self.driver.get(url)
-        # self.driver.maximize_window()
+        self.driver.maximize_window()
 
 
 class Component(object):
@@ -54,18 +54,23 @@ class ItemPage(Page):
     PATH = ''
 
     @property
-    def movie_info(self):
+    def item_info(self):
         return ItemInfo(self.driver)
 
 
 class SearchForm(Component):
     INPUT_FIELD = '//input[@placeholder="Введите название фильма, сериала или телешоу"]'
     SEARCH_BUTTON = '//span[text()="Найти"]'
+    SEARCH_RESULTS_PAGE_TITLE = '//h1[text()="Результаты поиска"]'
 
     def input_query(self, query):
         self.driver.find_element_by_xpath(self.INPUT_FIELD).send_keys(query)
 
     def submit(self):
+        wait = WebDriverWait(self.driver, 10, 0.1)
+        wait.until(
+            expected_conditions.element_to_be_clickable((By.XPATH, self.SEARCH_BUTTON))
+        )
         self.driver.find_element_by_xpath(self.SEARCH_BUTTON).click()
 
 

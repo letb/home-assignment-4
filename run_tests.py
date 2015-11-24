@@ -2,12 +2,13 @@
 
 import sys
 import unittest
-from tests.test import AccurateSearchTest
+from tests.test import AccurateSearchTest, SymbolsSearchTest
 
 
 if __name__ == '__main__':
     suite = unittest.TestSuite((
         unittest.makeSuite(AccurateSearchTest),
+        unittest.makeSuite(SymbolsSearchTest),
     ))
     result = unittest.TextTestRunner().run(suite)
     sys.exit(not result.wasSuccessful())

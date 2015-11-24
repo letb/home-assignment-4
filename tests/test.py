@@ -8,7 +8,7 @@ import time
 from selenium.webdriver import DesiredCapabilities, Remote
 from selenium.webdriver.support.ui import WebDriverWait
 
-from pages import *
+from pages import SearchPage, SearchResultPage, ItemPage
 
 
 class AccurateSearchTest(unittest.TestCase):
@@ -46,7 +46,7 @@ class AccurateSearchTest(unittest.TestCase):
         search_result.item_title(TITLE).click()
 
         movie_page = ItemPage(self.driver)
-        movie_info = movie_page.movie_info
+        movie_info = movie_page.item_info
         title_eng = movie_info.item_title_eng()
         self.assertEqual(title_eng, TITLE_ENG)
 
@@ -72,7 +72,43 @@ class AccurateSearchTest(unittest.TestCase):
         search_result.item_title(TITLE).click()
 
         series_page = ItemPage(self.driver)
-        movie_info = series_page.movie_info
+        series_info = series_page.item_info
+        title_eng = series_info.item_title_eng()
+        self.assertEqual(title_eng, TITLE_ENG)
+
+    def tearDown(self):
+        self.driver.quit()
+
+
+class SymbolsSearchTest(unittest.TestCase):
+    def setUp(self):
+        browser = os.environ.get('TTHA2BROWSER', 'CHROME')
+
+        self.driver = Remote(
+            command_executor='http://127.0.0.1:4444/wd/hub',
+            desired_capabilities=getattr(DesiredCapabilities, browser).copy()
+        )
+
+    def test_search_numbers(self):
+        QUERY = '300'
+        TITLE = u'300 спартанцев'
+        TITLE_ENG = '300'
+
+        search_page = SearchPage(self.driver)
+        search_page.open()
+
+        search_form = search_page.searchform
+        search_form.input_query(QUERY)
+        search_form.submit()
+
+        result_page = SearchResultPage(self.driver)
+        search_result = result_page.search_result
+        item_title = search_result.item_title(TITLE)
+        self.assertEqual(item_title.text, TITLE)
+        item_title.click()
+
+        movie_page = ItemPage(self.driver)
+        movie_info = movie_page.item_info
         title_eng = movie_info.item_title_eng()
         self.assertEqual(title_eng, TITLE_ENG)
 
