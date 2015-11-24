@@ -2,11 +2,8 @@
 
 import os
 import unittest
-import urlparse
-import time
 
 from selenium.webdriver import DesiredCapabilities, Remote
-from selenium.webdriver.support.ui import WebDriverWait
 
 from pages import SearchPage, SearchResultPage, ItemPage
 
@@ -158,6 +155,34 @@ class SymbolsSearchTest(unittest.TestCase):
         movie_info = movie_page.item_info
         title_eng = movie_info.item_title_eng()
         self.assertEqual(title_eng, TITLE_ENG)
+
+    def tearDown(self):
+        self.driver.quit()
+
+
+class EmptySearchTest(unittest.TestCase):
+    def setUp(self):
+        browser = os.environ.get('TTHA2BROWSER', 'CHROME')
+
+        self.driver = Remote(
+            command_executor='http://127.0.0.1:4444/wd/hub',
+            desired_capabilities=getattr(DesiredCapabilities, browser).copy()
+        )
+
+    def test_empty_search(self):
+        QUERY = 'NON-EXISTENT MOVIE'
+
+        search_page = SearchPage(self.driver)
+        search_page.open()
+
+        search_form = search_page.searchform
+        search_form.input_query(QUERY)
+        search_form.submit()
+
+        result_page = SearchResultPage(self.driver)
+        search_result = result_page.search_result
+        result_items = search_result.result_items()
+        self.assertFalse(result_items)
 
     def tearDown(self):
         self.driver.quit()

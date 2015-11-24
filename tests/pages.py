@@ -110,6 +110,9 @@ class SearchResult(Component):
         )
         return self.driver.find_element_by_xpath(ITEM_TITLE)
 
+    def result_items(self):
+        return self.driver.find_elements_by_css_selector(self.BLOCK_ITEM_NAMES)
+
 
 class ItemInfo(Component):
     ITEM_TITLE_ENG = '.movieabout__nameeng'
