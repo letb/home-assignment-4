@@ -71,6 +71,7 @@ class SearchForm(Component):
     SEARCH_FIELD = '//input[@placeholder="Введите название фильма, сериала или телешоу"]'
     SEARCH_BUTTON = '//span[text()="Найти"]'
     SEARCH_RESULTS_PAGE_TITLE = '//h1[text()="Результаты поиска"]'
+    AUTOCOMPLETE_RESULT = '.bigsearch__blocksearch__suggest__item'
 
     def input_query_paste(self, query):
         search_field = self.driver.find_element_by_xpath(self.SEARCH_FIELD)
@@ -79,7 +80,6 @@ class SearchForm(Component):
 
     def input_query(self, query):
         self.driver.find_element_by_xpath(self.SEARCH_FIELD).send_keys(query)
-
 
     def submit(self):
         wait = WebDriverWait(self.driver, 10)
@@ -118,6 +118,12 @@ class SuggestList(Component):
                 if is_category: items_titles.append(item.find_element_by_css_selector(self.TITLE).text)
         return items_titles
 
+    ITEMS = '.bigsearch__blocksearch__suggest__item'
+    TITLES = '.bigsearch__blocksearch__suggest__item__title__name a'
+    YEARS = '.bigsearch__blocksearch__suggest__item__info > *:first-child'
+    COUNTRIES = '.bigsearch__blocksearch__suggest__item__info > *:nth-child(3)'
+    ENG_TITLES = '.bigsearch__blocksearch__suggest__item__title__eng'
+
     def items_titles(self):
         items = self.items()
         return [item.text for item in items]
@@ -130,6 +136,20 @@ class SuggestList(Component):
         items = self.items()
         items_with_title = [item for item in items if item.text == title]
         return None if len(items_with_title) == 0 else items_with_title[0]
+
+
+    def wait_autocomplete (self):
+        WebDriverWait(self.driver, 5).until(
+            lambda driver :
+                driver.find_elements_by_css_selector(
+                    self.ITEMS
+                )
+        )
+
+    def find_by_selector (self, selector):
+        self.wait_autocomplete()
+        items = self.driver.find_elements_by_css_selector(selector)
+        return [item.text for item in items]
 
 
 
@@ -174,7 +194,7 @@ class SearchResult(Component):
 class ItemInfo(Component):
     ITEM_TITLE = '.movieabout__name'
     ITEM_TITLE_ENG = '.movieabout__nameeng'
-    SELECTED_NAVBAR_TAB ='.pm-toolbar__group .pm-toolbar__button_current .pm-toolbar__button__text__inner_current'
+    SELECTED_NAVBAR_TAB = '.pm-toolbar__group .pm-toolbar__button_current .pm-toolbar__button__text__inner_current'
 
     def item_title(self):
         return self.driver.find_element_by_css_selector(self.ITEM_TITLE).text

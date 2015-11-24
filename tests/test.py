@@ -10,9 +10,21 @@ from selenium.webdriver import DesiredCapabilities, Remote
 from pages import SearchPage, SearchResultPage, ItemPage
 
 
+def represents_int(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
+
+
 class BaseTestCase(unittest.TestCase):
+    search_page = None
+
     def setUp(self):
         self.driver = webdriver.Firefox()
+        self.search_page = SearchPage(self.driver)
+        self.search_page.open()
         # browser = os.environ.get('TTHA2BROWSER', 'CHROME')
         #
         # self.driver = Remote(
@@ -29,13 +41,10 @@ class AccurateSearchTest(BaseTestCase):
         TITLE = u'Терминатор'
         TITLE_ENG = 'The Terminator'
 
-        search_page = SearchPage(self.driver)
-        search_page.open()
-
-        search_form = search_page.searchform
+        search_form = self.search_page.searchform
         search_form.input_query_paste(TITLE)
 
-        suggest_list = search_page.suggestlist
+        suggest_list = self.search_page.suggestlist
         movies_titles = suggest_list.items_titles()
         self.assertTrue(TITLE in movies_titles)
 
@@ -178,7 +187,6 @@ class VulnerableSearchTest(BaseTestCase):
 
 
 class NonExistentSearchTest(BaseTestCase):
-
     def test_non_existent_search(self):
         QUERY = 'NON-EXISTENT MOVIE'
 
@@ -198,7 +206,6 @@ class NonExistentSearchTest(BaseTestCase):
 
 
 class YearQuerySearchTest(BaseTestCase):
-
     def test_not_search_by_year_in_query(self):
         QUERY = "2010"
 
@@ -216,9 +223,6 @@ class YearQuerySearchTest(BaseTestCase):
         result_items = search_result.result_years()
         first_movie_year = result_items[0].text[-6:][1:5]
         self.assertNotEqual(int(first_movie_year), 2010)
-
-    def tearDown(self):
-        self.driver.quit()
 
 # 1.2.1 Работает контекстная подсказка
 class SuggesterTest(BaseTestCase):
@@ -326,3 +330,60 @@ class SuggestCategoryTest(BaseTestCase):
         suggest_list = self.display_suggest_list(QUERY)
         self.assertTrue(suggest_list.is_present())
         self.assertIn(QUERY, suggest_list.items_titles_by_category(CATEGORY))
+
+class CorrectDisplayTest(BaseTestCase):
+    def display_search_helper(self, query, selector):
+        search_form = self.search_page.searchform
+        search_form.input_query(query)
+
+        suggest_list = self.search_page.suggestlist
+        items = suggest_list.find_by_selector(selector)
+
+        return items
+
+    def test_display_years(self):
+        QUERY = u'День'
+        years = self.display_search_helper(QUERY, self.search_page.suggestlist.YEARS)
+        self.assertEqual(years.__len__(), 7)
+
+    def test_display_titles(self):
+        QUERY = u'День'
+        titles = self.display_search_helper(QUERY, self.search_page.suggestlist.TITLES)
+        self.assertEqual(titles.__len__(), 7)
+
+    def test_display_countries(self):
+        QUERY = u'День'
+        countries = self.display_search_helper(QUERY, self.search_page.suggestlist.COUNTRIES)
+        self.assertEqual(countries.__len__(), 7)
+
+    def starts_with_year(self, str, splitter):
+        return represents_int(str.split(splitter)[0])
+
+    def test_display_english_titles(self):
+        QUERY = u'При'
+        items = self.display_search_helper(QUERY, self.search_page.suggestlist.ITEMS)
+
+        for i, val in enumerate(items):
+            country_list = val.split('/')[1]
+            main_country = country_list.split(',')[0]
+            headers_array = val.split('\n')
+            if main_country == u'Россия':
+                self.assertTrue(self.starts_with_year(headers_array[1], '/'))
+            else:
+                self.assertFalse(self.starts_with_year(headers_array[1], '/'))
+
+
+class EmptySuggestTest(BaseTestCase):
+    def display_search_helper(self, query):
+        search_form = self.search_page.searchform
+        search_form.input_query(query)
+
+        suggest_list = self.search_page.suggestlist
+        items = suggest_list.find_by_selector(suggest_list.CATEGORY_CLASS)
+
+        return items
+
+    def test_display_years(self):
+        QUERY = u'Буллшит'
+        items = self.display_search_helper(QUERY)
+        self.assertEqual(items.__len__(), 0)
