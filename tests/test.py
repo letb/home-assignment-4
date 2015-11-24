@@ -216,3 +216,43 @@ class YearQuerySearchTest(BaseTestCase):
         result_items = search_result.result_years()
         first_movie_year = result_items[0].text[-6:][1:5]
         self.assertNotEqual(int(first_movie_year), 2010)
+
+    def tearDown(self):
+        self.driver.quit()
+
+
+class SuggesterTest(BaseTestCase):
+    def test_suggester_works(self):
+        QUERY = u'Марина'
+
+        search_page = SearchPage(self.driver)
+        search_page.open()
+
+        search_form = search_page.searchform
+        search_form.input_query_paste(QUERY)
+
+        suggest_list = search_page.suggestlist
+        self.assertTrue(suggest_list.is_present())
+
+        items_titles = suggest_list.items_titles()
+        self.assertIn(QUERY, items_titles)
+        item_with_title = suggest_list.first_item_by_title(QUERY)
+        self.assertIsNotNone(item_with_title)
+
+        item_with_title.click()
+        item_page = ItemPage(self.driver)
+        item_info = item_page.item_info
+        title = item_info.item_title()
+        self.assertEqual(title, QUERY)
+
+
+# 1.2.1 Работает контекстная подсказка
+# 1.2.2 Элементы в подсказке разбиваются по соответствующим категориям:
+# 1.2.2.1 Фильм отображается в подсказке, если такой есть
+# 1.2.2.2 Сериал отображается в подсказке, если такой есть
+# 1.2.2.3 Телешоу отображается в подсказке, если такое есть
+# 1.2.2.4 Персона отображается в подсказке, если есть совпадение с именем
+# 1.2.2.5 Новость отображается в подсказке, если есть совпадение с заголовком
+# 1.2.2.6 Подборка отображается в подсказке, если есть совпадение с заголовком
+# 1.2.2.7 Место отображается в подсказке, если есть совпадение с заголовком
+# 1.2.2.8 Событие отображается в подсказке, если есть совпадение с заголовком

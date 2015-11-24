@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import urlparse
 
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
@@ -89,17 +90,47 @@ class SearchForm(Component):
 
 
 class SuggestList(Component):
-    ITEMS = '.bigsearch__blocksearch__suggest__item'
-    TITLES = '.bigsearch__blocksearch__suggest__item__title__name a'
+    SUGGEST_ITEMS  = '.bigsearch__blocksearch__suggest > div'
+    CATEGORY_CLASS = 'bigsearch__blocksearch__suggest__title'
+    ITEM  = '.bigsearch__blocksearch__suggest__item'
+    TITLE = '.bigsearch__blocksearch__suggest__item__title__name a'
+
+    def is_present(self):
+        try:
+            wait = WebDriverWait(self.driver, 10)
+            wait.until(
+                expected_conditions.presence_of_element_located((By.CSS_SELECTOR, self.ITEM))
+            )
+            return True
+        except TimeoutException:
+            return False
+
+    def items_titles_by_category(self, category):
+        self.is_present()
+        items_titles = []
+        is_category = False
+
+        suggest_items = self.driver.find_elements_by_css_selector(self.SUGGEST_ITEMS)
+        for item in suggest_items:
+            if item.get_attribute('class') == self.CATEGORY_CLASS:
+                is_category = item.text == category
+            else:
+                if is_category: items_titles.append(item.find_element_by_css_selector(self.TITLE).text)
+        return items_titles
 
     def items_titles(self):
-        wait = WebDriverWait(self.driver, 10)
-        wait.until(
-            expected_conditions.presence_of_element_located((By.CSS_SELECTOR, self.ITEMS))
-        )
-        items = self.driver.find_elements_by_css_selector(self.TITLES)
-        titles = [item.text for item in items]
-        return titles
+        items = self.items()
+        return [item.text for item in items]
+
+    def items(self):
+        self.is_present()
+        return self.driver.find_elements_by_css_selector(self.TITLE)
+
+    def first_item_by_title(self, title):
+        items = self.items()
+        items_with_title = [item for item in items if item.text == title]
+        return None if len(items_with_title) == 0 else items_with_title[0]
+
 
 
 class SearchResult(Component):
@@ -141,8 +172,12 @@ class SearchResult(Component):
 
 
 class ItemInfo(Component):
+    ITEM_TITLE = '.movieabout__name'
     ITEM_TITLE_ENG = '.movieabout__nameeng'
     SELECTED_NAVBAR_TAB ='.pm-toolbar__group .pm-toolbar__button_current .pm-toolbar__button__text__inner_current'
+
+    def item_title(self):
+        return self.driver.find_element_by_css_selector(self.ITEM_TITLE).text
 
     def item_title_eng(self):
         return self.driver.find_element_by_css_selector(self.ITEM_TITLE_ENG).text
