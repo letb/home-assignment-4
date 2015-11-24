@@ -224,6 +224,7 @@ class YearQuerySearchTest(BaseTestCase):
         first_movie_year = result_items[0].text[-6:][1:5]
         self.assertNotEqual(int(first_movie_year), 2010)
 
+
 # 1.2.1 Работает контекстная подсказка
 class SuggesterTest(BaseTestCase):
     def test_suggester_works(self):
@@ -330,6 +331,35 @@ class SuggestCategoryTest(BaseTestCase):
         suggest_list = self.display_suggest_list(QUERY)
         self.assertTrue(suggest_list.is_present())
         self.assertIn(QUERY, suggest_list.items_titles_by_category(CATEGORY))
+
+
+# 1.2.3 Проверка отображения элементов в контекстной подсказке при вводе в поле поиска года
+class YearQuerySuggestTest(BaseTestCase):
+    def display_suggest_list(self, query):
+        search_page = SearchPage(self.driver)
+        search_page.open()
+        search_form = search_page.searchform
+        search_form.input_query_paste(query)
+        return search_page.suggestlist
+
+    # 1.2.3.1 В категории "Сериал" отображаются элементы с годом выпуска, указанным в поисковой строке
+    def test_suggest_film_by_year(self):
+        QUERY = '2012'
+        CATEGORY = u'СЕРИАЛЫ'
+
+        suggest_list = self.display_suggest_list(QUERY)
+        self.assertTrue(suggest_list.is_present())
+        self.assertIn(QUERY, suggest_list.items_years_by_category(CATEGORY))
+
+    # 1.2.3.2 В категории "Телешоу" отображаются элементы с годом выпуска, указанным в поисковой строке
+    def test_suggest_show_by_year(self):
+        QUERY = '2012'
+        CATEGORY = u'ТЕЛЕШОУ'
+
+        suggest_list = self.display_suggest_list(QUERY)
+        self.assertTrue(suggest_list.is_present())
+        self.assertIn(QUERY, suggest_list.items_years_by_category(CATEGORY))
+
 
 class CorrectDisplayTest(BaseTestCase):
     def display_search_helper(self, query, selector):

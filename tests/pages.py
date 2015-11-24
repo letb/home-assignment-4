@@ -94,6 +94,8 @@ class SuggestList(Component):
     CATEGORY_CLASS = 'bigsearch__blocksearch__suggest__title'
     ITEM  = '.bigsearch__blocksearch__suggest__item'
     TITLE = '.bigsearch__blocksearch__suggest__item__title__name a'
+    YEARS = '.bigsearch__blocksearch__suggest__item__info > *:first-child'
+
 
     def is_present(self):
         try:
@@ -105,9 +107,9 @@ class SuggestList(Component):
         except TimeoutException:
             return False
 
-    def items_titles_by_category(self, category):
+    def items_by_category(self, category):
         self.is_present()
-        items_titles = []
+        items = []
         is_category = False
 
         suggest_items = self.driver.find_elements_by_css_selector(self.SUGGEST_ITEMS)
@@ -115,12 +117,19 @@ class SuggestList(Component):
             if item.get_attribute('class') == self.CATEGORY_CLASS:
                 is_category = item.text == category
             else:
-                if is_category: items_titles.append(item.find_element_by_css_selector(self.TITLE).text)
-        return items_titles
+                if is_category: items.append(item)
+        return items
+
+    def items_years_by_category(self, category):
+        items = self.items_by_category(category)
+        return [item.find_element_by_css_selector(self.YEARS).text for item in items]
+
+    def items_titles_by_category(self, category):
+        items = self.items_by_category(category)
+        return [item.find_element_by_css_selector(self.TITLE).text for item in items]
 
     ITEMS = '.bigsearch__blocksearch__suggest__item'
     TITLES = '.bigsearch__blocksearch__suggest__item__title__name a'
-    YEARS = '.bigsearch__blocksearch__suggest__item__info > *:first-child'
     COUNTRIES = '.bigsearch__blocksearch__suggest__item__info > *:nth-child(3)'
     ENG_TITLES = '.bigsearch__blocksearch__suggest__item__title__eng'
 
