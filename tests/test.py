@@ -220,7 +220,7 @@ class YearQuerySearchTest(BaseTestCase):
     def tearDown(self):
         self.driver.quit()
 
-
+# 1.2.1 Работает контекстная подсказка
 class SuggesterTest(BaseTestCase):
     def test_suggester_works(self):
         QUERY = u'Марина'
@@ -246,13 +246,83 @@ class SuggesterTest(BaseTestCase):
         self.assertEqual(title, QUERY)
 
 
-# 1.2.1 Работает контекстная подсказка
 # 1.2.2 Элементы в подсказке разбиваются по соответствующим категориям:
-# 1.2.2.1 Фильм отображается в подсказке, если такой есть
-# 1.2.2.2 Сериал отображается в подсказке, если такой есть
-# 1.2.2.3 Телешоу отображается в подсказке, если такое есть
-# 1.2.2.4 Персона отображается в подсказке, если есть совпадение с именем
-# 1.2.2.5 Новость отображается в подсказке, если есть совпадение с заголовком
-# 1.2.2.6 Подборка отображается в подсказке, если есть совпадение с заголовком
-# 1.2.2.7 Место отображается в подсказке, если есть совпадение с заголовком
-# 1.2.2.8 Событие отображается в подсказке, если есть совпадение с заголовком
+class SuggestCategoryTest(BaseTestCase):
+    def display_suggest_list(self, query):
+        search_page = SearchPage(self.driver)
+        search_page.open()
+        search_form = search_page.searchform
+        search_form.input_query_paste(query)
+        return search_page.suggestlist
+
+    # 1.2.2.1 Фильм отображается в подсказке, если такой есть
+    def test_suggest_film(self):
+        QUERY = u'Персона'
+        CATEGORY = u'ФИЛЬМЫ'
+
+        suggest_list = self.display_suggest_list(QUERY)
+        self.assertTrue(suggest_list.is_present())
+        self.assertIn(QUERY, suggest_list.items_titles_by_category(CATEGORY))
+
+    # 1.2.2.2 Сериал отображается в подсказке, если такой есть
+    def test_suggest_series(self):
+        QUERY = u'Теория большого взрыва'
+        CATEGORY = u'СЕРИАЛЫ'
+
+        suggest_list = self.display_suggest_list(QUERY)
+        self.assertTrue(suggest_list.is_present())
+        self.assertIn(QUERY, suggest_list.items_titles_by_category(CATEGORY))
+
+    # 1.2.2.3 Телешоу отображается в подсказке, если такое есть
+    def test_suggest_show(self):
+        QUERY = u'Битва экстрасенсов'
+        CATEGORY = u'ТЕЛЕШОУ'
+
+        suggest_list = self.display_suggest_list(QUERY)
+        self.assertTrue(suggest_list.is_present())
+        self.assertIn(QUERY, suggest_list.items_titles_by_category(CATEGORY))
+
+    # 1.2.2.4 Персона отображается в подсказке, если есть совпадение с именем
+    def test_suggest_person(self):
+        QUERY = u'Кристиан Бэйл'
+        CATEGORY = u'ПЕРСОНЫ'
+
+        suggest_list = self.display_suggest_list(QUERY)
+        self.assertTrue(suggest_list.is_present())
+        self.assertIn(QUERY, suggest_list.items_titles_by_category(CATEGORY))
+
+    # 1.2.2.5 Новость отображается в подсказке, если есть совпадение с заголовком
+    def test_suggest_news(self):
+        QUERY = u'Голубой мет из сериала «Во все тяжкие» подарили музею США'
+        CATEGORY = u'НОВОСТИ'
+
+        suggest_list = self.display_suggest_list(QUERY)
+        self.assertTrue(suggest_list.is_present())
+        self.assertIn(QUERY, suggest_list.items_titles_by_category(CATEGORY))
+
+    # 1.2.2.6 Подборка отображается в подсказке, если есть совпадение с заголовком
+    def test_suggest_selection(self):
+        QUERY = u'10 самых ожидаемых фильмов ноября'
+        CATEGORY = u'ПОДБОРКИ'
+
+        suggest_list = self.display_suggest_list(QUERY)
+        self.assertTrue(suggest_list.is_present())
+        self.assertIn(QUERY, suggest_list.items_titles_by_category(CATEGORY))
+
+    # 1.2.2.7 Место отображается в подсказке, если есть совпадение с заголовком
+    def test_suggest_place(self):
+        QUERY = u'Большой театр'
+        CATEGORY = u'МЕСТА'
+
+        suggest_list = self.display_suggest_list(QUERY)
+        self.assertTrue(suggest_list.is_present())
+        self.assertIn(QUERY, suggest_list.items_titles_by_category(CATEGORY))
+
+    # 1.2.2.8 Событие отображается в подсказке, если есть совпадение с заголовком
+    def test_suggest_event(self):
+        QUERY = u'Свадьба Фигаро'
+        CATEGORY = u'СОБЫТИЯ'
+
+        suggest_list = self.display_suggest_list(QUERY)
+        self.assertTrue(suggest_list.is_present())
+        self.assertIn(QUERY, suggest_list.items_titles_by_category(CATEGORY))
