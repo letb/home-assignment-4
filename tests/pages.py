@@ -7,6 +7,8 @@ import time
 
 from selenium.webdriver import DesiredCapabilities, Remote
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.common.by import By
 
 
 class Page(object):
@@ -47,16 +49,17 @@ class SearchResultPage(Page):
         return SearchResult(self.driver)
 
 
-class MoviePage(Page):
+class ItemPage(Page):
     PATH = ''
 
     @property
     def movie_info(self):
-        return MovieInfo(self.driver)
+        return ItemInfo(self.driver)
+
 
 
 class SearchForm(Component):
-    INPUT_FIELD   = '//input[@placeholder="Введите название фильма, сериала или телешоу"]'
+    INPUT_FIELD = '//input[@placeholder="Введите название фильма, сериала или телешоу"]'
     SEARCH_BUTTON = '//span[text()="Найти"]'
 
     def input_query(self, query):
@@ -67,18 +70,16 @@ class SearchForm(Component):
 
 
 class SuggestList(Component):
-    # SUGGEST_LIST = '.bigsearch__blocksearch__suggest'
-    TITLES = '.bigsearch__blocksearch__suggest__title'
-    ITEMS = '.bigsearch__blocksearch__suggest__item__title__name a'
-    MAX_movies_NUMBER = 3
+    ITEMS = '.bigsearch__blocksearch__suggest__item'
+    TITLES = '.bigsearch__blocksearch__suggest__item__title__name a'
 
-    def movies_titles(self):
-        WebDriverWait(self.driver, 30, 0.5).until(
-            lambda d: d.find_element_by_css_selector(self.ITEMS).is_displayed()
+    def items_titles(self):
+        WebDriverWait(self.driver, 10).until(
+            expected_conditions.presence_of_element_located((By.CSS_SELECTOR, self.ITEMS))
         )
-        items = self.driver.find_elements_by_css_selector(self.ITEMS)
-        movies = [item.text for item in items]
-        return movies[:self.MAX_movies_NUMBER]
+        items = self.driver.find_elements_by_css_selector(self.TITLES)
+        titles = [item.text for item in items]
+        return titles
 
 
 class SearchResult(Component):
@@ -88,7 +89,7 @@ class SearchResult(Component):
         elements_numbers = self.driver.find_elements_by_css_selector(self.ELEMENT_NUMBER_BADGES)
         return elements_numbers[0].text
 
-    def series_nubmer(self):
+    def series_number(self):
         elements_numbers = self.driver.find_elements_by_css_selector(self.ELEMENT_NUMBER_BADGES)
         return elements_numbers[1].text
 
@@ -97,12 +98,14 @@ class SearchResult(Component):
         return self.driver.find_element_by_xpath(ITEM_TITLE)
 
 
-class MovieInfo(Component):
-    MOVIE_TITLE_ENG = '.movieabout__nameeng'
+class ItemInfo(Component):
+    ITEM_TITLE_ENG = '.movieabout__nameeng'
 
-    def movie_title_eng(self):
-        title_eng = self.driver.find_element_by_css_selector(self.MOVIE_TITLE_ENG)
+    def item_title_eng(self):
+        title_eng = self.driver.find_element_by_css_selector(self.ITEM_TITLE_ENG)
         return title_eng.text
+
+
 
 
 
