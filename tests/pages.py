@@ -4,6 +4,7 @@ import urlparse
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
+import time
 
 
 class Page(object):
@@ -11,6 +12,7 @@ class Page(object):
     PATH = ''
     INPUT_FIELD = '//input[@placeholder="Введите название фильма, сериала или телешоу"]'
     AFISHA_LOGO = 'img.pm-logo__link__pic'
+    WINDOW_MIN_WIDTH = 1280
 
     def __init__(self, driver):
         self.driver = driver
@@ -18,6 +20,7 @@ class Page(object):
     def open(self):
         url = urlparse.urljoin(self.BASE_URL, self.PATH)
         self.driver.get(url)
+        self.driver.set_window_size(self.WINDOW_MIN_WIDTH, 600)
         self.driver.maximize_window()
         self.wait_page()
         input_field = self.driver.find_element_by_xpath(self.INPUT_FIELD)
@@ -92,7 +95,7 @@ class SuggestList(Component):
     def items_titles(self):
         wait = WebDriverWait(self.driver, 10)
         wait.until(
-            expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, self.ITEMS))
+            expected_conditions.presence_of_element_located((By.CSS_SELECTOR, self.ITEMS))
         )
         items = self.driver.find_elements_by_css_selector(self.TITLES)
         titles = [item.text for item in items]
