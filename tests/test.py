@@ -71,13 +71,10 @@ class AccurateSearchTest(BaseTestCase):
         TITLE = u'Летающий цирк Монти Пайтона'
         TITLE_ENG = 'Monty Python\'s Flying Circus'
 
-        search_page = SearchPage(self.driver)
-        search_page.open()
-
-        search_form = search_page.searchform
+        search_form = self.search_page.searchform
         search_form.input_query_paste(QUERY)
 
-        suggest_list = search_page.suggestlist
+        suggest_list = self.search_page.suggestlist
         suggested_titles = suggest_list.items_titles()
         self.assertIn(TITLE, suggested_titles)
 
@@ -98,13 +95,10 @@ class AccurateSearchTest(BaseTestCase):
         QUERY = u'Хочу к Меладзе'
         TITLE = u'Хочу к Меладзе'
 
-        search_page = SearchPage(self.driver)
-        search_page.open()
-
-        search_form = search_page.searchform
+        search_form = self.search_page.searchform
         search_form.input_query_paste(QUERY)
 
-        suggest_list = search_page.suggestlist
+        suggest_list = self.search_page.suggestlist
         suggested_titles = suggest_list.items_titles()
         self.assertIn(TITLE, suggested_titles)
 
@@ -122,10 +116,7 @@ class AccurateSearchTest(BaseTestCase):
 
 class SymbolsSearchTest(BaseTestCase):
     def symbol_search_helper(self, QUERY, TITLE, TITLE_ENG):
-        search_page = SearchPage(self.driver)
-        search_page.open()
-
-        search_form = search_page.searchform
+        search_form = self.search_page.searchform
         search_form.input_query_paste(QUERY)
         search_form.submit()
 
@@ -155,10 +146,8 @@ class SymbolsSearchTest(BaseTestCase):
 
 class VulnerableSearchTest(BaseTestCase):
     def vulnerable_search_helper(self, QUERY, control=False):
-        search_page = SearchPage(self.driver)
-        search_page.open()
 
-        search_form = search_page.searchform
+        search_form = self.search_page.searchform
         if control:
             search_form.input_query(QUERY)
         elif QUERY != '':
@@ -190,10 +179,7 @@ class NonExistentSearchTest(BaseTestCase):
     def test_non_existent_search(self):
         QUERY = 'NON-EXISTENT MOVIE'
 
-        search_page = SearchPage(self.driver)
-        search_page.open()
-
-        search_form = search_page.searchform
+        search_form = self.search_page.searchform
         search_form.input_query_paste(QUERY)
         search_form.submit()
 
@@ -209,10 +195,7 @@ class YearQuerySearchTest(BaseTestCase):
     def test_not_search_by_year_in_query(self):
         QUERY = "2010"
 
-        search_page = SearchPage(self.driver)
-        search_page.open()
-
-        search_form = search_page.searchform
+        search_form = self.search_page.searchform
         search_form.input_query_paste(QUERY)
         search_form.submit()
 
@@ -224,18 +207,15 @@ class YearQuerySearchTest(BaseTestCase):
         first_movie_year = result_items[0].text[-6:][1:5]
         self.assertNotEqual(int(first_movie_year), 2010)
 
+
 # 1.2.1 Работает контекстная подсказка
 class SuggesterTest(BaseTestCase):
     def test_suggester_works(self):
         QUERY = u'Марина'
-
-        search_page = SearchPage(self.driver)
-        search_page.open()
-
-        search_form = search_page.searchform
+        search_form = self.search_page.searchform
         search_form.input_query_paste(QUERY)
 
-        suggest_list = search_page.suggestlist
+        suggest_list = self.search_page.suggestlist
         self.assertTrue(suggest_list.is_present())
 
         items_titles = suggest_list.items_titles()
@@ -253,11 +233,9 @@ class SuggesterTest(BaseTestCase):
 # 1.2.2 Элементы в подсказке разбиваются по соответствующим категориям:
 class SuggestCategoryTest(BaseTestCase):
     def display_suggest_list(self, query):
-        search_page = SearchPage(self.driver)
-        search_page.open()
-        search_form = search_page.searchform
+        search_form = self.search_page.searchform
         search_form.input_query_paste(query)
-        return search_page.suggestlist
+        return self.search_page.suggestlist
 
     # 1.2.2.1 Фильм отображается в подсказке, если такой есть
     def test_suggest_film(self):
@@ -331,7 +309,14 @@ class SuggestCategoryTest(BaseTestCase):
         self.assertTrue(suggest_list.is_present())
         self.assertIn(QUERY, suggest_list.items_titles_by_category(CATEGORY))
 
+
 class CorrectDisplayTest(BaseTestCase):
+
+    base_query = u'День'
+
+    def starts_with_year(self, str, splitter):
+        return represents_int(str.split(splitter)[0])
+
     def display_search_helper(self, query, selector):
         search_form = self.search_page.searchform
         search_form.input_query(query)
@@ -342,22 +327,16 @@ class CorrectDisplayTest(BaseTestCase):
         return items
 
     def test_display_years(self):
-        QUERY = u'День'
-        years = self.display_search_helper(QUERY, self.search_page.suggestlist.YEARS)
+        years = self.display_search_helper(self.base_query, self.search_page.suggestlist.YEARS)
         self.assertEqual(years.__len__(), 7)
 
     def test_display_titles(self):
-        QUERY = u'День'
-        titles = self.display_search_helper(QUERY, self.search_page.suggestlist.TITLES)
+        titles = self.display_search_helper(self.base_query, self.search_page.suggestlist.TITLES)
         self.assertEqual(titles.__len__(), 7)
 
     def test_display_countries(self):
-        QUERY = u'День'
-        countries = self.display_search_helper(QUERY, self.search_page.suggestlist.COUNTRIES)
+        countries = self.display_search_helper(self.base_query, self.search_page.suggestlist.COUNTRIES)
         self.assertEqual(countries.__len__(), 7)
-
-    def starts_with_year(self, str, splitter):
-        return represents_int(str.split(splitter)[0])
 
     def test_display_english_titles(self):
         QUERY = u'При'
@@ -374,14 +353,13 @@ class CorrectDisplayTest(BaseTestCase):
 
 
 class EmptySuggestTest(BaseTestCase):
+
     def display_search_helper(self, query):
         search_form = self.search_page.searchform
         search_form.input_query(query)
 
         suggest_list = self.search_page.suggestlist
-        items = suggest_list.find_by_selector(suggest_list.CATEGORY_CLASS)
-
-        return items
+        return suggest_list.find_by_selector(suggest_list.CATEGORY_CLASS)
 
     def test_display_years(self):
         QUERY = u'Буллшит'
