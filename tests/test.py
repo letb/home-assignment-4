@@ -62,8 +62,8 @@ class AccurateSearchTest(unittest.TestCase):
         search_form.input_query(QUERY)
 
         suggest_list = search_page.suggestlist
-        series_titles = suggest_list.items_titles()
-        self.assertTrue(TITLE in series_titles)
+        suggested_titles = suggest_list.items_titles()
+        self.assertIn(TITLE, suggested_titles)
 
         search_form.submit()
 
@@ -75,6 +75,30 @@ class AccurateSearchTest(unittest.TestCase):
         series_info = series_page.item_info
         title_eng = series_info.item_title_eng()
         self.assertEqual(title_eng, TITLE_ENG)
+
+    def test_accurate_show_search(self):
+        QUERY = u'Хочу к Меладзе'
+        TITLE = u'Хочу к Меладзе'
+
+        search_page = SearchPage(self.driver)
+        search_page.open()
+
+        search_form = search_page.searchform
+        search_form.input_query(QUERY)
+
+        suggest_list = search_page.suggestlist
+        suggested_titles = suggest_list.items_titles()
+        self.assertIn(TITLE, suggested_titles)
+
+        search_form.submit()
+
+        result_page = SearchResultPage(self.driver)
+        search_result = result_page.search_result
+        search_result.item_title(TITLE).click()
+
+        show_page = ItemPage(self.driver)
+        show_info = show_page.movie_info
+        # todo: assert menubar on tvshow
 
     def tearDown(self):
         self.driver.quit()
@@ -112,32 +136,28 @@ class SymbolsSearchTest(unittest.TestCase):
         title_eng = movie_info.item_title_eng()
         self.assertEqual(title_eng, TITLE_ENG)
 
-    def test_accurate_show_search(self):
-        QUERY = u'Хочу к Меладзе'
-        TITLE = u'Хочу к Меладзе'
+    def test_search_symbols(self):
+        QUERY = '1+1'
+        TITLE = '1+1'
+        TITLE_ENG = 'Intouchables'
 
         search_page = SearchPage(self.driver)
         search_page.open()
 
         search_form = search_page.searchform
         search_form.input_query(QUERY)
-
-        suggest_list = search_page.suggestlist
-        suggested_titles = suggest_list.items_titles()
-        self.assertIn(TITLE, suggested_titles)
-
         search_form.submit()
 
         result_page = SearchResultPage(self.driver)
         search_result = result_page.search_result
         item_title = search_result.item_title(TITLE)
-        # todo: assert item_title exists
-        search_result.item_title(TITLE).click()
+        self.assertEqual(item_title.text, TITLE)
+        item_title.click()
 
-        show_page = ItemPage(self.driver)
-        movie_info = show_page.movie_info
-        # todo: assert menubar on tvshow
-
+        movie_page = ItemPage(self.driver)
+        movie_info = movie_page.item_info
+        title_eng = movie_info.item_title_eng()
+        self.assertEqual(title_eng, TITLE_ENG)
 
     def tearDown(self):
         self.driver.quit()

@@ -67,7 +67,7 @@ class SearchForm(Component):
         self.driver.find_element_by_xpath(self.INPUT_FIELD).send_keys(query)
 
     def submit(self):
-        wait = WebDriverWait(self.driver, 10, 0.1)
+        wait = WebDriverWait(self.driver, 10)
         wait.until(
             expected_conditions.element_to_be_clickable((By.XPATH, self.SEARCH_BUTTON))
         )
@@ -79,7 +79,8 @@ class SuggestList(Component):
     TITLES = '.bigsearch__blocksearch__suggest__item__title__name a'
 
     def items_titles(self):
-        WebDriverWait(self.driver, 10).until(
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(
             expected_conditions.presence_of_element_located((By.CSS_SELECTOR, self.ITEMS))
         )
         items = self.driver.find_elements_by_css_selector(self.TITLES)
@@ -103,6 +104,10 @@ class SearchResult(Component):
 
     def item_title(self, title):
         ITEM_TITLE = '//div[@class="searchitem__item__name"]/a[text()="%s"]' % title
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(
+            expected_conditions.presence_of_element_located((By.XPATH, ITEM_TITLE))
+        )
         return self.driver.find_element_by_xpath(ITEM_TITLE)
 
 
