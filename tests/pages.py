@@ -58,7 +58,6 @@ class ItemPage(Page):
         return ItemInfo(self.driver)
 
 
-
 class SearchForm(Component):
     INPUT_FIELD = '//input[@placeholder="Введите название фильма, сериала или телешоу"]'
     SEARCH_BUTTON = '//span[text()="Найти"]'
@@ -101,19 +100,6 @@ class SearchResult(Component):
         ITEM_TITLE = '//div[@class="searchitem__item__name"]/a[text()="%s"]' % title
         return self.driver.find_element_by_xpath(ITEM_TITLE)
 
-    def check_block_header(self, block, header):
-        try:
-            return block.find_element_by_css_selector(self.BLOCK_HEADER).text == header
-        except NoSuchElementException as e:
-            return False
-
-    # возвращает названия элементов в данном блоке (ФИЛЬМЫ | СЕРИАЛЫ | ТЕЛЕШОУ)
-    def items_titles(self, block_header):
-        blocks = self.driver.find_elements_by_css_selector(self.BLOCK)
-        item_block = [block for block in blocks if self.check_block_header(block, block_header)][0]
-        items = item_block.find_elements_by_css_selector(self.BLOCK_ITEM_NAMES)
-        return [item.text for item in items]
-
 
 class ItemInfo(Component):
     ITEM_TITLE_ENG = '.movieabout__nameeng'
@@ -121,10 +107,3 @@ class ItemInfo(Component):
     def item_title_eng(self):
         title_eng = self.driver.find_element_by_css_selector(self.ITEM_TITLE_ENG)
         return title_eng.text
-
-
-
-
-
-
-
