@@ -170,13 +170,12 @@ class EmptySearchTest(unittest.TestCase):
         )
 
     def test_empty_search(self):
-        QUERY = 'NON-EXISTENT MOVIE'
+        QUERY = ''
 
         search_page = SearchPage(self.driver)
         search_page.open()
 
         search_form = search_page.searchform
-        search_form.input_query(QUERY)
         search_form.submit()
 
         result_page = SearchResultPage(self.driver)
