@@ -64,12 +64,14 @@ class ItemPage(Page):
 
 
 class SearchForm(Component):
-    INPUT_FIELD = '//input[@placeholder="Введите название фильма, сериала или телешоу"]'
+    SEARCH_FIELD = '//input[@placeholder="Введите название фильма, сериала или телешоу"]'
     SEARCH_BUTTON = '//span[text()="Найти"]'
     SEARCH_RESULTS_PAGE_TITLE = '//h1[text()="Результаты поиска"]'
 
     def input_query(self, query):
-        self.driver.find_element_by_xpath(self.INPUT_FIELD).send_keys(query)
+        search_field = self.driver.find_element_by_xpath(self.SEARCH_FIELD)
+        self.driver.execute_script("return arguments[0].value='" + query + "';", search_field)
+        search_field.send_keys("")
 
     def submit(self):
         wait = WebDriverWait(self.driver, 10)
@@ -117,7 +119,7 @@ class SearchResult(Component):
         )
         return self.driver.find_element_by_xpath(ITEM_TITLE)
 
-    def header_title(self):
+    def results_title(self):
         wait_for_result_page = WebDriverWait(self.driver, 15)
         wait_for_result_page.until(
             expected_conditions.presence_of_element_located((By.CSS_SELECTOR, self.HEADER_TITLE))
@@ -131,10 +133,12 @@ class SearchResult(Component):
         return self.driver.find_elements_by_css_selector(self.BLOCK_ITEM_NAME_YEAR)
 
 
-
 class ItemInfo(Component):
     ITEM_TITLE_ENG = '.movieabout__nameeng'
+    SELECTED_NAVBAR_TAB ='.pm-toolbar__group .pm-toolbar__button_current .pm-toolbar__button__text__inner_current'
 
     def item_title_eng(self):
-        title_eng = self.driver.find_element_by_css_selector(self.ITEM_TITLE_ENG)
-        return title_eng.text
+        return self.driver.find_element_by_css_selector(self.ITEM_TITLE_ENG).text
+
+    def selected_navbar_tab_title(self):
+        return self.driver.find_element_by_css_selector(self.SELECTED_NAVBAR_TAB).text

@@ -46,6 +46,8 @@ class AccurateSearchTest(unittest.TestCase):
         movie_info = movie_page.item_info
         title_eng = movie_info.item_title_eng()
         self.assertEqual(title_eng, TITLE_ENG)
+        selected_navbar_tab_title = movie_info.selected_navbar_tab_title()
+        self.assertEqual(selected_navbar_tab_title, u'Кино')
 
     def test_accurate_series_search(self):
         QUERY = u'Летающий цирк Монти Пайтона'
@@ -72,6 +74,8 @@ class AccurateSearchTest(unittest.TestCase):
         series_info = series_page.item_info
         title_eng = series_info.item_title_eng()
         self.assertEqual(title_eng, TITLE_ENG)
+        selected_navbar_tab_title = series_info.selected_navbar_tab_title()
+        self.assertEqual(selected_navbar_tab_title, u'Сериалы')
 
     def test_accurate_show_search(self):
         QUERY = u'Хочу к Меладзе'
@@ -95,7 +99,8 @@ class AccurateSearchTest(unittest.TestCase):
 
         show_page = ItemPage(self.driver)
         show_info = show_page.item_info
-        # todo: assert menubar on tvshow
+        selected_navbar_tab_title = show_info.selected_navbar_tab_title()
+        self.assertEqual(selected_navbar_tab_title, u'Телешоу')
 
     def tearDown(self):
         self.driver.quit()
@@ -165,7 +170,7 @@ class VulnerableSearchTest(unittest.TestCase):
 
         result_page = SearchResultPage(self.driver)
         search_result = result_page.search_result
-        header_title = search_result.header_title()
+        header_title = search_result.results_title()
         self.assertEqual(header_title, u'Результаты поиска')
         result_items = search_result.result_items()
         self.assertFalse(result_items)
@@ -207,7 +212,7 @@ class NonExistentSearchTest(unittest.TestCase):
 
         result_page = SearchResultPage(self.driver)
         search_result = result_page.search_result
-        header_title = search_result.header_title()
+        header_title = search_result.results_title()
         self.assertEqual(header_title, u'Результаты поиска')
         result_items = search_result.result_items()
         self.assertFalse(result_items)
@@ -237,7 +242,7 @@ class YearQuerySearchTest(unittest.TestCase):
 
         result_page = SearchResultPage(self.driver)
         search_result = result_page.search_result
-        header_title = search_result.header_title()
+        header_title = search_result.results_title()
         self.assertEqual(header_title, u'Результаты поиска')
         result_items = search_result.result_years()
         first_movie_year = result_items[0].text[-6:][1:5]
