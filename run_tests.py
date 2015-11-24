@@ -2,17 +2,16 @@
 
 import sys
 import unittest
-from tests.test import AccurateSearchTest, SymbolsSearchTest, EmptySearchTest, NonExistentSearchTest
-from tests.test import LongQuerySearchTest
+from tests.test import AccurateSearchTest, SymbolsSearchTest, NonExistentSearchTest
+from tests.test import VulnerableSearchTest
 
 
 if __name__ == '__main__':
     suite = unittest.TestSuite((
         unittest.makeSuite(AccurateSearchTest),
         unittest.makeSuite(SymbolsSearchTest),
-        unittest.makeSuite(EmptySearchTest),
         unittest.makeSuite(NonExistentSearchTest),
-        unittest.makeSuite(LongQuerySearchTest),
+        unittest.makeSuite(VulnerableSearchTest),
     ))
     result = unittest.TextTestRunner().run(suite)
     sys.exit(not result.wasSuccessful())
