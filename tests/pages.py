@@ -64,6 +64,10 @@ class SearchForm(Component):
     SEARCH_RESULTS_PAGE_TITLE = '//h1[text()="Результаты поиска"]'
 
     def input_query(self, query):
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(
+            expected_conditions.element_to_be_clickable((By.XPATH, self.INPUT_FIELD))
+        )
         self.driver.find_element_by_xpath(self.INPUT_FIELD).send_keys(query)
 
     def submit(self):
@@ -90,6 +94,7 @@ class SuggestList(Component):
 
 class SearchResult(Component):
     ELEMENT_NUMBER_BADGES = '.countyellow'
+    HEADER_TITLE = 'h1.title__title'
     BLOCK = '.block.block_shadow_bottom'
     BLOCK_HEADER = '.hdr__inner'
     BLOCK_ITEM_NAMES = '.searchitem__item__name a'
@@ -109,6 +114,13 @@ class SearchResult(Component):
             expected_conditions.presence_of_element_located((By.XPATH, ITEM_TITLE))
         )
         return self.driver.find_element_by_xpath(ITEM_TITLE)
+
+    def header_title(self):
+        wait_for_result_page = WebDriverWait(self.driver, 15)
+        wait_for_result_page.until(
+            expected_conditions.presence_of_element_located((By.CSS_SELECTOR, self.HEADER_TITLE))
+        )
+        return self.driver.find_element_by_css_selector(self.HEADER_TITLE).text
 
     def result_items(self):
         return self.driver.find_elements_by_css_selector(self.BLOCK_ITEM_NAMES)
