@@ -266,6 +266,7 @@ class YearQuerySuggestTest(BaseTestCase):
         QUERY = '2012'
         CATEGORY = u'ТЕЛЕШОУ'
         self.year_query_suggest_helper(QUERY, CATEGORY)
+#
 
 
 class CorrectDisplayTest(BaseTestCase):
@@ -280,21 +281,25 @@ class CorrectDisplayTest(BaseTestCase):
 
         suggest_list = self.search_page.suggestlist
         items = suggest_list.find_by_selector(selector)
-
         return items
 
+    # У элемента выпадающего списка отображается год создания
     def test_display_years(self):
         years = self.display_search_helper(self.base_query, self.search_page.suggestlist.YEAR)
         self.assertEqual(len(years), 7)
 
-    def test_display_titles(self):
-        titles = self.display_search_helper(self.base_query, self.search_page.suggestlist.TITLE)
-        self.assertEqual(len(titles), 7)
-
+    # У элемента выпадающего списка отображается страна создания
     def test_display_countries(self):
         countries = self.display_search_helper(self.base_query, self.search_page.suggestlist.COUNTRY)
         self.assertEqual(len(countries), 7)
 
+    # У элемента выпадающего списка отображается название
+    # Если страна - Россия, то нет оригинального названия (есть только одно название)
+    def test_display_titles(self):
+        titles = self.display_search_helper(self.base_query, self.search_page.suggestlist.TITLE)
+        self.assertEqual(len(titles), 7)
+
+    # Если страна - не Россия, то есть оригинальное название
     def test_display_english_titles(self):
         QUERY = u'При'
         items = self.display_search_helper(QUERY, self.search_page.suggestlist.ITEM)
