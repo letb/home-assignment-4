@@ -276,7 +276,7 @@ class CorrectDisplayTest(BaseTestCase):
 
     def display_search_helper(self, query, selector):
         search_form = self.search_page.searchform
-        search_form.input_query(query)
+        search_form.input_query_paste(query)
 
         suggest_list = self.search_page.suggestlist
         items = suggest_list.find_by_selector(selector)
@@ -284,20 +284,20 @@ class CorrectDisplayTest(BaseTestCase):
         return items
 
     def test_display_years(self):
-        years = self.display_search_helper(self.base_query, self.search_page.suggestlist.YEARS)
-        self.assertEqual(years.__len__(), 7)
+        years = self.display_search_helper(self.base_query, self.search_page.suggestlist.YEAR)
+        self.assertEqual(len(years), 7)
 
     def test_display_titles(self):
-        titles = self.display_search_helper(self.base_query, self.search_page.suggestlist.TITLES)
-        self.assertEqual(titles.__len__(), 7)
+        titles = self.display_search_helper(self.base_query, self.search_page.suggestlist.TITLE)
+        self.assertEqual(len(titles), 7)
 
     def test_display_countries(self):
-        countries = self.display_search_helper(self.base_query, self.search_page.suggestlist.COUNTRIES)
-        self.assertEqual(countries.__len__(), 7)
+        countries = self.display_search_helper(self.base_query, self.search_page.suggestlist.COUNTRY)
+        self.assertEqual(len(countries), 7)
 
     def test_display_english_titles(self):
         QUERY = u'При'
-        items = self.display_search_helper(QUERY, self.search_page.suggestlist.ITEMS)
+        items = self.display_search_helper(QUERY, self.search_page.suggestlist.ITEM)
 
         for i, val in enumerate(items):
             country_list = val.split('/')[1]
@@ -320,4 +320,4 @@ class EmptySuggestTest(BaseTestCase):
     def test_display_years(self):
         QUERY = u'Буллшит'
         items = self.display_search_helper(QUERY)
-        self.assertEqual(items.__len__(), 0)
+        self.assertEqual(len(items), 0)
