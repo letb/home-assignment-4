@@ -3,7 +3,6 @@
 import os
 import unittest
 
-from selenium import webdriver
 from selenium.webdriver import DesiredCapabilities, Remote
 
 from pages import SearchPage, SearchResultPage, ItemPage
@@ -21,15 +20,14 @@ class BaseTestCase(unittest.TestCase):
     search_page = None
 
     def setUp(self):
-        self.driver = webdriver.Firefox()
+        browser = os.environ.get('TTHA2BROWSER', 'CHROME')
+
+        self.driver = Remote(
+            command_executor='http://127.0.0.1:4444/wd/hub',
+            desired_capabilities=getattr(DesiredCapabilities, browser).copy()
+        )
         self.search_page = SearchPage(self.driver)
         self.search_page.open()
-        # browser = os.environ.get('TTHA2BROWSER', 'CHROME')
-        #
-        # self.driver = Remote(
-        #     command_executor='http://127.0.0.1:4444/wd/hub',
-        #     desired_capabilities=getattr(DesiredCapabilities, browser).copy()
-        # )
 
     def tearDown(self):
         self.driver.quit()
