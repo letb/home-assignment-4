@@ -2,7 +2,6 @@
 
 import os
 import unittest
-import time
 
 from selenium import webdriver
 from selenium.webdriver import DesiredCapabilities, Remote
@@ -194,7 +193,6 @@ class SuggesterTest(BaseTestCase):
         self.assertEqual(title, QUERY)
 
 
-# 1.2.2 Элементы в подсказке разбиваются по соответствующим категориям:
 class SuggestCategoryTest(BaseTestCase):
     def display_suggest_list(self, query):
         search_form = self.search_page.searchform
@@ -207,72 +205,53 @@ class SuggestCategoryTest(BaseTestCase):
         self.assertTrue(suggest_list.is_present())
         self.assertIn(query, suggest_list.items_titles_by_category(category))
 
-
-    # 1.2.2.1 Фильм отображается в подсказке, если такой есть
     def test_suggest_film(self):
         QUERY = u'Персона'
         CATEGORY = u'ФИЛЬМЫ'
-
         self.suggest_category_helper(QUERY, CATEGORY)
 
-    # 1.2.2.2 Сериал отображается в подсказке, если такой есть
     def test_suggest_series(self):
         QUERY = u'Теория большого взрыва'
         CATEGORY = u'СЕРИАЛЫ'
-
         self.suggest_category_helper(QUERY, CATEGORY)
 
-    # 1.2.2.3 Телешоу отображается в подсказке, если такое есть
     def test_suggest_show(self):
         QUERY = u'Битва экстрасенсов'
         CATEGORY = u'ТЕЛЕШОУ'
-
         self.suggest_category_helper(QUERY, CATEGORY)
 
-    # 1.2.2.4 Персона отображается в подсказке, если есть совпадение с именем
     def test_suggest_person(self):
         QUERY = u'Кристиан Бэйл'
         CATEGORY = u'ПЕРСОНЫ'
-
         self.suggest_category_helper(QUERY, CATEGORY)
 
-    # 1.2.2.5 Новость отображается в подсказке, если есть совпадение с заголовком
     def test_suggest_news(self):
         QUERY = u'Голубой мет из сериала «Во все тяжкие» подарили музею США'
         CATEGORY = u'НОВОСТИ'
-
         self.suggest_category_helper(QUERY, CATEGORY)
 
-    # 1.2.2.6 Подборка отображается в подсказке, если есть совпадение с заголовком
     def test_suggest_selection(self):
         QUERY = u'10 самых ожидаемых фильмов ноября'
         CATEGORY = u'ПОДБОРКИ'
-
         self.suggest_category_helper(QUERY, CATEGORY)
 
 
-    # 1.2.2.7 Место отображается в подсказке, если есть совпадение с заголовком
     def test_suggest_place(self):
         QUERY = u'Большой театр'
         CATEGORY = u'МЕСТА'
-
         self.suggest_category_helper(QUERY, CATEGORY)
 
 
-    # 1.2.2.8 Событие отображается в подсказке, если есть совпадение с заголовком
     def test_suggest_event(self):
         QUERY = u'Свадьба Фигаро'
         CATEGORY = u'СОБЫТИЯ'
-
         self.suggest_category_helper(QUERY, CATEGORY)
 
 
-# 1.2.3 Проверка отображения элементов в контекстной подсказке при вводе в поле поиска года
 class YearQuerySuggestTest(BaseTestCase):
     def display_suggest_list(self, query):
         search_form = self.search_page.searchform
         search_form.input_query_paste(query)
-
         return self.search_page.suggestlist
 
     def year_query_suggest_helper(self, query, category):
@@ -280,18 +259,14 @@ class YearQuerySuggestTest(BaseTestCase):
         self.assertTrue(suggest_list.is_present())
         self.assertIn(query, suggest_list.items_years_by_category(category))
 
-    # 1.2.3.1 В категории "Сериал" отображаются элементы с годом выпуска, указанным в поисковой строке
     def test_suggest_film_by_year(self):
         QUERY = '2012'
         CATEGORY = u'СЕРИАЛЫ'
-
         self.year_query_suggest_helper(QUERY, CATEGORY)
 
-    # 1.2.3.2 В категории "Телешоу" отображаются элементы с годом выпуска, указанным в поисковой строке
     def test_suggest_show_by_year(self):
         QUERY = '2012'
         CATEGORY = u'ТЕЛЕШОУ'
-
         self.year_query_suggest_helper(QUERY, CATEGORY)
 
 

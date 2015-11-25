@@ -3,7 +3,11 @@
 import sys
 import unittest
 
-from tests.test import *
+from tests.test import AccurateSearchTest, SymbolsSearchTest, \
+                       NonExistentSearchTest, VulnerableSearchTest, \
+                       YearQuerySearchTest, CorrectDisplayTest, \
+                       SuggesterTest, SuggestCategoryTest, \
+                       EmptySuggestTest, YearQuerySuggestTest
 
 if __name__ == '__main__':
     suite = unittest.TestSuite((
