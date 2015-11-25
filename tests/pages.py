@@ -92,9 +92,11 @@ class SearchForm(Component):
 class SuggestList(Component):
     SUGGEST_ITEMS  = '.bigsearch__blocksearch__suggest > div'
     CATEGORY_CLASS = 'bigsearch__blocksearch__suggest__title'
-    ITEM  = '.bigsearch__blocksearch__suggest__item'
+    ITEM = '.bigsearch__blocksearch__suggest__item'
     TITLE = '.bigsearch__blocksearch__suggest__item__title__name a'
-    YEARS = '.bigsearch__blocksearch__suggest__item__info > *:first-child'
+    ENG_TITLE = '.bigsearch__blocksearch__suggest__item__title__eng'
+    YEAR = '.bigsearch__blocksearch__suggest__item__info > *:first-child'
+    COUNTRY = '.bigsearch__blocksearch__suggest__item__info > *:nth-child(3)'
 
 
     def is_present(self):
@@ -122,16 +124,11 @@ class SuggestList(Component):
 
     def items_years_by_category(self, category):
         items = self.items_by_category(category)
-        return [item.find_element_by_css_selector(self.YEARS).text for item in items]
+        return [item.find_element_by_css_selector(self.YEAR).text for item in items]
 
     def items_titles_by_category(self, category):
         items = self.items_by_category(category)
         return [item.find_element_by_css_selector(self.TITLE).text for item in items]
-
-    ITEMS = '.bigsearch__blocksearch__suggest__item'
-    TITLES = '.bigsearch__blocksearch__suggest__item__title__name a'
-    COUNTRIES = '.bigsearch__blocksearch__suggest__item__info > *:nth-child(3)'
-    ENG_TITLES = '.bigsearch__blocksearch__suggest__item__title__eng'
 
     def items_titles(self):
         items = self.items()
@@ -146,12 +143,11 @@ class SuggestList(Component):
         items_with_title = [item for item in items if item.text == title]
         return None if len(items_with_title) == 0 else items_with_title[0]
 
-
     def wait_autocomplete (self):
         WebDriverWait(self.driver, 5).until(
             lambda driver :
                 driver.find_elements_by_css_selector(
-                    self.ITEMS
+                    self.ITEM
                 )
         )
 

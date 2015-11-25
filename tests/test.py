@@ -37,99 +37,64 @@ class BaseTestCase(unittest.TestCase):
 
 
 class AccurateSearchTest(BaseTestCase):
-    def test_accurate_movie_search(self):
-        TITLE = u'Терминатор'
-        TITLE_ENG = 'The Terminator'
-
+    def accurate_search_helper(self, query, title, category):
         search_form = self.search_page.searchform
-        search_form.input_query_paste(TITLE)
+        search_form.input_query_paste(query)
 
         suggest_list = self.search_page.suggestlist
-        movies_titles = suggest_list.items_titles()
-        self.assertTrue(TITLE in movies_titles)
+        suggested_titles = suggest_list.items_titles()
+        self.assertIn(title, suggested_titles)
 
         search_form.submit()
 
         result_page = SearchResultPage(self.driver)
         search_result = result_page.search_result
+        search_result.item_title(title).click()
 
-        movies_number = search_result.movies_number()
-        self.assertEqual(int(movies_number), 9)
-        series_number = search_result.series_number()
-        self.assertEqual(int(series_number), 1)
-        search_result.item_title(TITLE).click()
+        item_page = ItemPage(self.driver)
+        item_info = item_page.item_info
+        selected_navbar_tab_title = item_info.selected_navbar_tab_title()
+        self.assertEqual(selected_navbar_tab_title, category)
 
-        movie_page = ItemPage(self.driver)
-        movie_info = movie_page.item_info
-        title_eng = movie_info.item_title_eng()
-        self.assertEqual(title_eng, TITLE_ENG)
-        selected_navbar_tab_title = movie_info.selected_navbar_tab_title()
-        self.assertEqual(selected_navbar_tab_title, u'Кино')
+
+    def test_accurate_movie_search(self):
+        QUERY = u'Терминатор'
+        TITLE = u'Терминатор'
+        CATEGORY = u'Кино'
+
+        self.accurate_search_helper(QUERY, TITLE, CATEGORY)
 
     def test_accurate_series_search(self):
         QUERY = u'Летающий цирк Монти Пайтона'
         TITLE = u'Летающий цирк Монти Пайтона'
-        TITLE_ENG = 'Monty Python\'s Flying Circus'
+        CATEGORY = u'Сериалы'
 
-        search_form = self.search_page.searchform
-        search_form.input_query_paste(QUERY)
-
-        suggest_list = self.search_page.suggestlist
-        suggested_titles = suggest_list.items_titles()
-        self.assertIn(TITLE, suggested_titles)
-
-        search_form.submit()
-
-        result_page = SearchResultPage(self.driver)
-        search_result = result_page.search_result
-        search_result.item_title(TITLE).click()
-
-        series_page = ItemPage(self.driver)
-        series_info = series_page.item_info
-        title_eng = series_info.item_title_eng()
-        self.assertEqual(title_eng, TITLE_ENG)
-        selected_navbar_tab_title = series_info.selected_navbar_tab_title()
-        self.assertEqual(selected_navbar_tab_title, u'Сериалы')
+        self.accurate_search_helper(QUERY, TITLE, CATEGORY)
 
     def test_accurate_show_search(self):
         QUERY = u'Хочу к Меладзе'
         TITLE = u'Хочу к Меладзе'
+        CATEGORY = u'Телешоу'
 
-        search_form = self.search_page.searchform
-        search_form.input_query_paste(QUERY)
-
-        suggest_list = self.search_page.suggestlist
-        suggested_titles = suggest_list.items_titles()
-        self.assertIn(TITLE, suggested_titles)
-
-        search_form.submit()
-
-        result_page = SearchResultPage(self.driver)
-        search_result = result_page.search_result
-        search_result.item_title(TITLE).click()
-
-        show_page = ItemPage(self.driver)
-        show_info = show_page.item_info
-        selected_navbar_tab_title = show_info.selected_navbar_tab_title()
-        self.assertEqual(selected_navbar_tab_title, u'Телешоу')
+        self.accurate_search_helper(QUERY, TITLE, CATEGORY)
 
 
 class SymbolsSearchTest(BaseTestCase):
-    def symbol_search_helper(self, QUERY, TITLE, TITLE_ENG):
+    def symbol_search_helper(self, query, title, title_eng):
         search_form = self.search_page.searchform
-        search_form.input_query_paste(QUERY)
+        search_form.input_query_paste(query)
         search_form.submit()
 
         result_page = SearchResultPage(self.driver)
         search_result = result_page.search_result
-        item_title = search_result.item_title(TITLE)
-        self.assertEqual(item_title.text, TITLE)
+        item_title = search_result.item_title(title)
+        self.assertEqual(item_title.text, title)
         item_title.click()
 
         movie_page = ItemPage(self.driver)
         movie_info = movie_page.item_info
-        title_eng = movie_info.item_title_eng()
-        self.assertEqual(title_eng, TITLE_ENG)
+        item_title_eng = movie_info.item_title_eng()
+        self.assertEqual(item_title_eng, title_eng)
 
     def test_search_numbers(self):
         QUERY = '300'
@@ -145,13 +110,12 @@ class SymbolsSearchTest(BaseTestCase):
 
 
 class VulnerableSearchTest(BaseTestCase):
-    def vulnerable_search_helper(self, QUERY, control=False):
-
+    def vulnerable_search_helper(self, query, control=False):
         search_form = self.search_page.searchform
         if control:
-            search_form.input_query(QUERY)
-        elif QUERY != '':
-            search_form.input_query_paste(QUERY)
+            search_form.input_query(query)
+        elif query != '':
+            search_form.input_query_paste(query)
         search_form.submit()
 
         result_page = SearchResultPage(self.driver)
@@ -235,79 +199,72 @@ class SuggestCategoryTest(BaseTestCase):
     def display_suggest_list(self, query):
         search_form = self.search_page.searchform
         search_form.input_query_paste(query)
+
         return self.search_page.suggestlist
+
+    def suggest_category_helper(self, query, category):
+        suggest_list = self.display_suggest_list(query)
+        self.assertTrue(suggest_list.is_present())
+        self.assertIn(query, suggest_list.items_titles_by_category(category))
+
 
     # 1.2.2.1 Фильм отображается в подсказке, если такой есть
     def test_suggest_film(self):
         QUERY = u'Персона'
         CATEGORY = u'ФИЛЬМЫ'
 
-        suggest_list = self.display_suggest_list(QUERY)
-        self.assertTrue(suggest_list.is_present())
-        self.assertIn(QUERY, suggest_list.items_titles_by_category(CATEGORY))
+        self.suggest_category_helper(QUERY, CATEGORY)
 
     # 1.2.2.2 Сериал отображается в подсказке, если такой есть
     def test_suggest_series(self):
         QUERY = u'Теория большого взрыва'
         CATEGORY = u'СЕРИАЛЫ'
 
-        suggest_list = self.display_suggest_list(QUERY)
-        self.assertTrue(suggest_list.is_present())
-        self.assertIn(QUERY, suggest_list.items_titles_by_category(CATEGORY))
+        self.suggest_category_helper(QUERY, CATEGORY)
 
     # 1.2.2.3 Телешоу отображается в подсказке, если такое есть
     def test_suggest_show(self):
         QUERY = u'Битва экстрасенсов'
         CATEGORY = u'ТЕЛЕШОУ'
 
-        suggest_list = self.display_suggest_list(QUERY)
-        self.assertTrue(suggest_list.is_present())
-        self.assertIn(QUERY, suggest_list.items_titles_by_category(CATEGORY))
+        self.suggest_category_helper(QUERY, CATEGORY)
 
     # 1.2.2.4 Персона отображается в подсказке, если есть совпадение с именем
     def test_suggest_person(self):
         QUERY = u'Кристиан Бэйл'
         CATEGORY = u'ПЕРСОНЫ'
 
-        suggest_list = self.display_suggest_list(QUERY)
-        self.assertTrue(suggest_list.is_present())
-        self.assertIn(QUERY, suggest_list.items_titles_by_category(CATEGORY))
+        self.suggest_category_helper(QUERY, CATEGORY)
 
     # 1.2.2.5 Новость отображается в подсказке, если есть совпадение с заголовком
     def test_suggest_news(self):
         QUERY = u'Голубой мет из сериала «Во все тяжкие» подарили музею США'
         CATEGORY = u'НОВОСТИ'
 
-        suggest_list = self.display_suggest_list(QUERY)
-        self.assertTrue(suggest_list.is_present())
-        self.assertIn(QUERY, suggest_list.items_titles_by_category(CATEGORY))
+        self.suggest_category_helper(QUERY, CATEGORY)
 
     # 1.2.2.6 Подборка отображается в подсказке, если есть совпадение с заголовком
     def test_suggest_selection(self):
         QUERY = u'10 самых ожидаемых фильмов ноября'
         CATEGORY = u'ПОДБОРКИ'
 
-        suggest_list = self.display_suggest_list(QUERY)
-        self.assertTrue(suggest_list.is_present())
-        self.assertIn(QUERY, suggest_list.items_titles_by_category(CATEGORY))
+        self.suggest_category_helper(QUERY, CATEGORY)
+
 
     # 1.2.2.7 Место отображается в подсказке, если есть совпадение с заголовком
     def test_suggest_place(self):
         QUERY = u'Большой театр'
         CATEGORY = u'МЕСТА'
 
-        suggest_list = self.display_suggest_list(QUERY)
-        self.assertTrue(suggest_list.is_present())
-        self.assertIn(QUERY, suggest_list.items_titles_by_category(CATEGORY))
+        self.suggest_category_helper(QUERY, CATEGORY)
+
 
     # 1.2.2.8 Событие отображается в подсказке, если есть совпадение с заголовком
     def test_suggest_event(self):
         QUERY = u'Свадьба Фигаро'
         CATEGORY = u'СОБЫТИЯ'
 
-        suggest_list = self.display_suggest_list(QUERY)
-        self.assertTrue(suggest_list.is_present())
-        self.assertIn(QUERY, suggest_list.items_titles_by_category(CATEGORY))
+        self.suggest_category_helper(QUERY, CATEGORY)
 
 
 # 1.2.3 Проверка отображения элементов в контекстной подсказке при вводе в поле поиска года
@@ -315,29 +272,30 @@ class YearQuerySuggestTest(BaseTestCase):
     def display_suggest_list(self, query):
         search_form = self.search_page.searchform
         search_form.input_query_paste(query)
+
         return self.search_page.suggestlist
+
+    def year_query_suggest_helper(self, query, category):
+        suggest_list = self.display_suggest_list(query)
+        self.assertTrue(suggest_list.is_present())
+        self.assertIn(query, suggest_list.items_years_by_category(category))
 
     # 1.2.3.1 В категории "Сериал" отображаются элементы с годом выпуска, указанным в поисковой строке
     def test_suggest_film_by_year(self):
         QUERY = '2012'
         CATEGORY = u'СЕРИАЛЫ'
 
-        suggest_list = self.display_suggest_list(QUERY)
-        self.assertTrue(suggest_list.is_present())
-        self.assertIn(QUERY, suggest_list.items_years_by_category(CATEGORY))
+        self.year_query_suggest_helper(QUERY, CATEGORY)
 
     # 1.2.3.2 В категории "Телешоу" отображаются элементы с годом выпуска, указанным в поисковой строке
     def test_suggest_show_by_year(self):
         QUERY = '2012'
         CATEGORY = u'ТЕЛЕШОУ'
 
-        suggest_list = self.display_suggest_list(QUERY)
-        self.assertTrue(suggest_list.is_present())
-        self.assertIn(QUERY, suggest_list.items_years_by_category(CATEGORY))
+        self.year_query_suggest_helper(QUERY, CATEGORY)
 
 
 class CorrectDisplayTest(BaseTestCase):
-
     base_query = u'День'
 
     def starts_with_year(self, str, splitter):
@@ -379,7 +337,6 @@ class CorrectDisplayTest(BaseTestCase):
 
 
 class EmptySuggestTest(BaseTestCase):
-
     def display_search_helper(self, query):
         search_form = self.search_page.searchform
         search_form.input_query(query)
