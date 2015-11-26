@@ -271,6 +271,15 @@ class YearQuerySuggestTest(BaseTestCase):
 
 class CorrectDisplayTest(BaseTestCase):
     base_query = u'День'
+    results_array = [
+        u'Приключения Маши в Стране Чудес\nYugo and Lala\n2012/Китай',
+        u'Притяжение\n2017/Россия',
+        u'Пристанище\nLura\n2013/Португалия',
+        u'Присоска\nSuckers\n2009/США, Испания',
+        u'Принцесса Фантагира\nFantaghiro\n1999/Испания',
+        u'Принцесса и нищенка\n2009/Россия',
+        u'Слава богу, ты пришёл!\n2006/Россия',
+    ]
 
     def starts_with_year(self, str, splitter):
         return represents_int(str.split(splitter)[0])
@@ -305,13 +314,7 @@ class CorrectDisplayTest(BaseTestCase):
         items = self.display_search_helper(QUERY, self.search_page.suggestlist.ITEM)
 
         for i, val in enumerate(items):
-            country_list = val.split('/')[1]
-            main_country = country_list.split(',')[0]
-            headers_array = val.split('\n')
-            if main_country == u'Россия':
-                self.assertTrue(self.starts_with_year(headers_array[1], '/'))
-            else:
-                self.assertFalse(self.starts_with_year(headers_array[1], '/'))
+            self.assertTrue(val == self.results_array[i])
 
 
 class EmptySuggestTest(BaseTestCase):
