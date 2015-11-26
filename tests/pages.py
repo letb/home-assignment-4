@@ -72,10 +72,14 @@ class SearchForm(Component):
     SEARCH_RESULTS_PAGE_TITLE = '//h1[text()="Результаты поиска"]'
     AUTOCOMPLETE_RESULT = '.bigsearch__blocksearch__suggest__item'
 
-    def input_query_paste(self, query):
-        search_field = self.driver.find_element_by_xpath(self.SEARCH_FIELD)
-        self.driver.execute_script("return arguments[0].value='" + query + "';", search_field)
-        search_field.send_keys("")
+    def input_query_and_wait(self, query):
+        ITEM_WITH_QUERY = '//div[@class="bigsearch__blocksearch__suggest__item__title__name"]/a[text()="%s"]' % query
+
+        self.driver.find_element_by_xpath(self.SEARCH_FIELD).send_keys(query)
+        wait = WebDriverWait(self.driver, 5, 1)
+        wait.until(
+            expected_conditions.visibility_of_element_located((By.XPATH, ITEM_WITH_QUERY))
+        )
 
     def input_query(self, query):
         self.driver.find_element_by_xpath(self.SEARCH_FIELD).send_keys(query)

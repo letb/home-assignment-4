@@ -36,7 +36,7 @@ class BaseTestCase(unittest.TestCase):
 class AccurateSearchTest(BaseTestCase):
     def accurate_search_helper(self, query, title, category):
         search_form = self.search_page.searchform
-        search_form.input_query_paste(query)
+        search_form.input_query_and_wait(query)
 
         suggest_list = self.search_page.suggestlist
         suggested_titles = suggest_list.items_titles()
@@ -79,7 +79,7 @@ class AccurateSearchTest(BaseTestCase):
 class SymbolsSearchTest(BaseTestCase):
     def symbol_search_helper(self, query, title, title_eng):
         search_form = self.search_page.searchform
-        search_form.input_query_paste(query)
+        search_form.input_query(query)
         search_form.submit()
 
         result_page = SearchResultPage(self.driver)
@@ -107,12 +107,10 @@ class SymbolsSearchTest(BaseTestCase):
 
 
 class VulnerableSearchTest(BaseTestCase):
-    def vulnerable_search_helper(self, query, control=False):
+    def vulnerable_search_helper(self, query):
         search_form = self.search_page.searchform
-        if control:
+        if query != '':
             search_form.input_query(query)
-        elif query != '':
-            search_form.input_query_paste(query)
         search_form.submit()
 
         result_page = SearchResultPage(self.driver)
@@ -132,8 +130,7 @@ class VulnerableSearchTest(BaseTestCase):
 
     def test_control_characters_search(self):
         QUERY = '\\0\\a \\b \\t \\n \\v \\f \\r'
-        control = True
-        self.vulnerable_search_helper(QUERY, control)
+        self.vulnerable_search_helper(QUERY)
 
 
 class NonExistentSearchTest(BaseTestCase):
@@ -141,7 +138,7 @@ class NonExistentSearchTest(BaseTestCase):
         QUERY = 'NON-EXISTENT MOVIE'
 
         search_form = self.search_page.searchform
-        search_form.input_query_paste(QUERY)
+        search_form.input_query(QUERY)
         search_form.submit()
 
         result_page = SearchResultPage(self.driver)
@@ -157,7 +154,7 @@ class YearQuerySearchTest(BaseTestCase):
         QUERY = "2010"
 
         search_form = self.search_page.searchform
-        search_form.input_query_paste(QUERY)
+        search_form.input_query(QUERY)
         search_form.submit()
 
         result_page = SearchResultPage(self.driver)
@@ -174,7 +171,7 @@ class SuggesterTest(BaseTestCase):
     def test_suggester_works(self):
         QUERY = u'Марина'
         search_form = self.search_page.searchform
-        search_form.input_query_paste(QUERY)
+        search_form.input_query(QUERY)
 
         suggest_list = self.search_page.suggestlist
         self.assertTrue(suggest_list.is_present())
@@ -192,14 +189,11 @@ class SuggesterTest(BaseTestCase):
 
 
 class SuggestCategoryTest(BaseTestCase):
-    def display_suggest_list(self, query):
-        search_form = self.search_page.searchform
-        search_form.input_query_paste(query)
-
-        return self.search_page.suggestlist
 
     def suggest_category_helper(self, query, category):
-        suggest_list = self.display_suggest_list(query)
+        search_form = self.search_page.searchform
+        search_form.input_query_and_wait(query)
+        suggest_list = self.search_page.suggestlist
         self.assertTrue(suggest_list.is_present())
         self.assertIn(query, suggest_list.items_titles_by_category(category))
 
@@ -249,7 +243,7 @@ class SuggestCategoryTest(BaseTestCase):
 class YearQuerySuggestTest(BaseTestCase):
     def display_suggest_list(self, query):
         search_form = self.search_page.searchform
-        search_form.input_query_paste(query)
+        search_form.input_query(query)
         return self.search_page.suggestlist
 
     def year_query_suggest_helper(self, query, category):
@@ -286,7 +280,7 @@ class CorrectDisplayTest(BaseTestCase):
 
     def display_search_helper(self, query, selector):
         search_form = self.search_page.searchform
-        search_form.input_query_paste(query)
+        search_form.input_query(query)
 
         suggest_list = self.search_page.suggestlist
         items = suggest_list.find_by_selector(selector)
